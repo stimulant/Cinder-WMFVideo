@@ -1,0 +1,4 @@
+samples/SimplePlayback/vc2012/Debug/
+*.opensdf
+*.sdf
+*.suo
