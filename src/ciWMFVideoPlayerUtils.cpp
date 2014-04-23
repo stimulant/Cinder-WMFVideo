@@ -7,6 +7,8 @@
 
 #include "ciWMFVideoPlayerUtils.h"
 #include <assert.h>
+#include <mmdeviceapi.h>
+#include <Functiondiscoverykeys_devpkey.h>
 #include <iostream>
 
 #pragma comment(lib, "shlwapi")
@@ -15,8 +17,10 @@
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "strmiids.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Propsys.lib")
 
 #include "presenter/Presenter.h"
+#include "atlcomcli.h"
 
 using namespace std;
 
@@ -45,7 +49,7 @@ HRESULT GetEventObject(IMFMediaEvent *pEvent, Q **ppObject)
 //HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource **ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource *pSource, 
-    IMFPresentationDescriptor *pPD, HWND hVideoWnd,IMFTopology **ppTopology,IMFVideoPresenter *pVideoPresenter);
+    IMFPresentationDescriptor *pPD, HWND hVideoWnd,IMFTopology **ppTopology,IMFVideoPresenter *pVideoPresenter, const WCHAR *audioDeviceId = 0);
 
 HRESULT AddToPlaybackTopology(IMFMediaSource *pSource, 
 							   IMFPresentationDescriptor *pPD, HWND hVideoWnd,IMFTopology *pTopology,IMFVideoPresenter *pVideoPresenter);
@@ -289,7 +293,7 @@ done:
 }
 
 //  Open a URL for playback.
-HRESULT CPlayer::OpenURL(const WCHAR *sURL)
+HRESULT CPlayer::OpenURL(const WCHAR *sURL, const WCHAR *audioDeviceId)
 {
     // 1. Create a new media session.
     // 2. Create the media source.
@@ -322,7 +326,7 @@ HRESULT CPlayer::OpenURL(const WCHAR *sURL)
     }
 
     // Create a partial topology.
-    hr = CreatePlaybackTopology(m_pSource, pSourcePD, m_hwndVideo, &pTopology,m_pEVRPresenter);
+    hr = CreatePlaybackTopology(m_pSource, pSourcePD, m_hwndVideo, &pTopology, m_pEVRPresenter, audioDeviceId);
     if (FAILED(hr))
     {
         goto done;
@@ -847,7 +851,8 @@ HRESULT CreateMediaSinkActivate(
     HWND hVideoWindow,                  // Handle to the video clipping window.
     IMFActivate **ppActivate,
 	IMFVideoPresenter *pVideoPresenter,
-	IMFMediaSink **ppMediaSink)
+	IMFMediaSink **ppMediaSink,
+	const WCHAR *audioDeviceId = 0)
 {
     IMFMediaTypeHandler *pHandler = NULL;
     IMFActivate *pActivate = NULL;
@@ -871,11 +876,106 @@ HRESULT CreateMediaSinkActivate(
     // Create an IMFActivate object for the renderer, based on the media type.
     if (MFMediaType_Audio == guidMajorType)
     {
+		HRESULT hr = S_OK;
+
+		IMMDeviceEnumerator *pEnum = NULL;      // Audio device enumerator.
+		IMMDeviceCollection *pDevices = NULL;   // Audio device collection.
+		IMMDevice *pDevice = NULL;              // An audio device.		
+		IMFMediaSink *pSink = NULL;             // Streaming audio renderer (SAR)
+		IPropertyStore *pProps = NULL;
+
+		LPWSTR wstrID = NULL;                   // Device ID.
+
+		// Create the device enumerator.
+		hr = CoCreateInstance(
+			__uuidof(MMDeviceEnumerator), 
+			NULL,
+			CLSCTX_ALL, 
+			__uuidof(IMMDeviceEnumerator), 
+			(void**)&pEnum
+			);
+
+		// Enumerate the rendering devices.
+		if (SUCCEEDED(hr))
+		{
+			hr = pEnum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pDevices);
+		}
+
+		// Get ID of the first device in the list.
+		if (SUCCEEDED(hr))
+		{
+			UINT pcDevices;
+			pDevices->GetCount( &pcDevices );			
+
+			for(UINT i = 0 ; i < pcDevices; i++){
+				hr = pDevices->Item(i, &pDevice);
+
+				if (SUCCEEDED(hr))
+				{
+					hr = pDevice->GetId(&wstrID);												
+				}
+
+				if(SUCCEEDED(hr))
+				{
+					hr = pDevice->OpenPropertyStore(STGM_READ, &pProps);
+				}				
+
+				PROPVARIANT varName = {0};
+				if(SUCCEEDED(hr))
+				{				
+					// Initialize container for property value.
+					PropVariantInit(&varName);
+
+					// Get the endpoint's friendly-name property.
+					hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);		
+
+					if(SUCCEEDED(hr))
+					{
+						WCHAR szName[128];
+								
+						hr = PropVariantToString( varName, szName, ARRAYSIZE(szName));
+						if (SUCCEEDED(hr) || hr == STRSAFE_E_INSUFFICIENT_BUFFER)
+						{
+							if(wcscmp ( szName, audioDeviceId) == 0 ) {
+								hr = pDevices->Item(i, &pDevice);
+								if (SUCCEEDED(hr))
+								{
+									hr = pDevice->GetId(&wstrID);	
+									PropVariantClear(&varName);
+									break;
+								}
+							}	
+						}					
+					}
+				}
+ 			}
+		}
+
+		if (SUCCEEDED(hr))
+		{
+			hr = MFCreateAudioRendererActivate(&pActivate);    
+		}		
+		
+		if (SUCCEEDED(hr))
+		{
+			hr = pActivate->SetString(
+				MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID, 
+				wstrID
+				);
+		}
+
+		//SAFE_RELEASE(pActivate)
+
         // Create the audio renderer.
-        hr = MFCreateAudioRendererActivate(&pActivate);
 		*ppActivate = pActivate;
 		(*ppActivate)->AddRef();
+
+		SAFE_RELEASE(pEnum);
+		SAFE_RELEASE(pDevices);
+		SAFE_RELEASE(pDevice); 		
+		CoTaskMemFree(wstrID);
     }
+
     else if (MFMediaType_Video == guidMajorType)
     {
         // Create the video renderer.
@@ -1076,7 +1176,8 @@ HRESULT AddBranchToPartialTopology(
     IMFPresentationDescriptor *pPD, // Presentation descriptor.
     DWORD iStream,                  // Stream index.
     HWND hVideoWnd,
-	IMFVideoPresenter *pVideoPresenter)                 // Window for video playback.
+	IMFVideoPresenter *pVideoPresenter, // Window for video playback.
+	const WCHAR * audioDeviceId = 0)
 {
     IMFStreamDescriptor *pSD = NULL;
     IMFActivate         *pSinkActivate = NULL;
@@ -1095,7 +1196,7 @@ HRESULT AddBranchToPartialTopology(
     if (fSelected)
     {
         // Create the media sink activation object.
-        hr = CreateMediaSinkActivate(pSD, hVideoWnd, &pSinkActivate,pVideoPresenter,&pMediaSink);
+        hr = CreateMediaSinkActivate(pSD, hVideoWnd, &pSinkActivate,pVideoPresenter,&pMediaSink, audioDeviceId);
         if (FAILED(hr))
         {
             goto done;
@@ -1153,7 +1254,9 @@ HRESULT CreatePlaybackTopology(
     IMFPresentationDescriptor *pPD,   // Presentation descriptor.
     HWND hVideoWnd,                   // Video window.
     IMFTopology **ppTopology,        // Receives a pointer to the topology.
-	IMFVideoPresenter *pVideoPresenter)         
+	IMFVideoPresenter *pVideoPresenter,
+	const WCHAR *audioDeviceId
+	)         
 {
     IMFTopology *pTopology = NULL;
     DWORD cSourceStreams = 0;
@@ -1175,7 +1278,7 @@ HRESULT CreatePlaybackTopology(
     // For each stream, create the topology nodes and add them to the topology.
     for (DWORD i = 0; i < cSourceStreams; i++)
     {
-        hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, hVideoWnd,pVideoPresenter);
+        hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, hVideoWnd,pVideoPresenter, audioDeviceId);
         if (FAILED(hr))
         {
             goto done;

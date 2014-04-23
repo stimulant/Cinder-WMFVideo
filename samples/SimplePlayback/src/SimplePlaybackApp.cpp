@@ -19,7 +19,8 @@ class SimplePlaybackApp : public AppNative {
 void SimplePlaybackApp::setup()
 {
 	app::setWindowSize(1280, 720);
-	video1.loadMovie( "1.mp4" );
+	//video1.loadMovie( "1.mp4" );
+	video1.loadMovie( "1.wmv", "Headphones (High Definition Audio Device)" );
 	video1.play();
 }
 
@@ -37,7 +38,7 @@ void SimplePlaybackApp::draw()
 	// clear out the window with black
 	gl::clear( Color( 0, 0, 0 ) ); 
 
-	video1.draw( 0, 0, 400, 400 );
+	video1.draw( 0, 0 );
 }
 
 CINDER_APP_NATIVE( SimplePlaybackApp, RendererGl )

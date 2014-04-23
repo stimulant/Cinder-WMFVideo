@@ -61,8 +61,7 @@ class ciWMFVideoPlayer {
 	ciWMFVideoPlayer();
 	 ~ciWMFVideoPlayer();
 
-	 bool				loadMovie(std::string name);
-	 bool 				loadMovie(std::string name_left, std::string name_right) ;
+	 bool				loadMovie(std::string name, std::string audioDevice="");
 	 void				close();
 	 void				update();
 	

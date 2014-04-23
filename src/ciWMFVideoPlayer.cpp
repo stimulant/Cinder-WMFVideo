@@ -69,7 +69,7 @@ void ciWMFVideoPlayer::forceExit()
 	}
 }
 
- bool ciWMFVideoPlayer::loadMovie(string name) 
+ bool ciWMFVideoPlayer::loadMovie(string name, string audioDevice) 
  {
 	 if (!_player) 
 	 { 
@@ -93,7 +93,10 @@ void ciWMFVideoPlayer::forceExit()
 	std::wstring w(s.length(), L' ');
 	std::copy(s.begin(), s.end(), w.begin());
 
-	hr = _player->OpenURL( w.c_str());
+	std::wstring a(audioDevice.length(), L' ');
+	std::copy(audioDevice.begin(), audioDevice.end(), a.begin());
+
+	hr = _player->OpenURL( w.c_str(), a.c_str() );
 	if (!_sharedTextureCreated)
 	{
 		_width = _player->getWidth();

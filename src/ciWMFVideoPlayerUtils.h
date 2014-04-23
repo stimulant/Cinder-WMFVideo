@@ -74,7 +74,7 @@ public:
     STDMETHODIMP  Invoke(IMFAsyncResult* pAsyncResult);
 
     // Playback
-    HRESULT       OpenURL(const WCHAR *sURL);
+    HRESULT       OpenURL(const WCHAR *sURL, const WCHAR *audioDeviceId = 0);
 
 	//Open multiple url in a same topology... Play with that of you want to do some video syncing
 	HRESULT       OpenMultipleURL(std::vector<const WCHAR *> &sURL);
