@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+<block
+	name="WMFVideo"
+	id="org.libcinder.wmfvideo"
+	author="Cinder Project, Stimulant"
+	license="MIT"
+	summary="Implements the WMF video playback in Cinder."
+	core="true"
+	>
+	<sourcePattern>src/*.cpp</sourcePattern>
+	<sourcePattern>src/presenter/*.cpp</sourcePattern>
+	<sourcePattern>src/presenter/common/*.cpp</sourcePattern>
+	<sourcePattern>src/*.h</sourcePattern>
+	<sourcePattern>src/presenter/*.h</sourcePattern>
+	<sourcePattern>src/presenter/common/*.h</sourcePattern>
+	<includePath>src</includePath>
+	<includePath>src/presenter</includePath>
+	<includePath>src/presenter/common</includePath>
+</block>
+</cinder>
