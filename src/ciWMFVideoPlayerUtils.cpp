@@ -10,6 +10,7 @@
 #include <mmdeviceapi.h>
 #include <Functiondiscoverykeys_devpkey.h>
 #include <iostream>
+#include <shobjidl.h> 
 
 #pragma comment(lib, "shlwapi")
 #pragma comment(lib, "mf.lib")
@@ -622,10 +623,10 @@ HRESULT CPlayer::OnPresentationEnded(IMFMediaEvent *pEvent)
 	varStart.vt = VT_I8;
 	varStart.hVal.QuadPart = 0; //i.e. seeking to the beginning
 		
-	HRESULT hr = S_OK;
-	hr = m_pSession->Start(&GUID_NULL,&varStart);
+	//HRESULT hr = S_OK;
+	//hr = m_pSession->Start(&GUID_NULL,&varStart);
 
-	if FAILED(hr)
+	//if FAILED(hr)
 	{
 		//ofLogError("ofxWMFVideoPlayerUtils", "Error while looping");
 	}

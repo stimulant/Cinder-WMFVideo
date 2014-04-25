@@ -10,6 +10,8 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
+#pragma once
+
 #ifndef PLAYER_H
 #define PLAYER_H
 
