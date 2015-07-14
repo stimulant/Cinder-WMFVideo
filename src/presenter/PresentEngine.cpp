@@ -18,6 +18,7 @@
 
 #include "EVRPresenter.h"
 #include "cinder/gl/gl.h"
+#include "glload/wgl_all.h"
 
 HRESULT FindAdapter(IDirect3D9 *pD3D9, HMONITOR hMonitor, UINT *puAdapterID);
 

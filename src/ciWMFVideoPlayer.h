@@ -19,41 +19,32 @@
 
 #include "ciWMFVideoPlayerUtils.h"
 #include "presenter/EVRPresenter.h"
-#include <boost/shared_ptr.hpp>
+#include "cinder/gl/gl.h"
 
 class ciWMFVideoPlayer;
 class CPlayer;
 
-namespace cinder
+class ciWMFVideoPlayer
 {
-	namespace gl
-	{
-		class Texture;
-		typedef std::shared_ptr<Texture> TextureRef;
-	}
-}
-
-class ciWMFVideoPlayer {
-
-	private:
-		static int  _instanceCount;
-		HWND		_hwndPlayer;
-		BOOL bRepaintClient;
+private:
+	static int			_instanceCount;
+	HWND				_hwndPlayer;
+	BOOL				bRepaintClient;
 		
-		int _width;
-		int _height;
+	int					_width;
+	int					_height;
 
-		bool _waitForLoadedToPlay;
-		bool _isLooping;
+	bool				_waitForLoadedToPlay;
+	bool				_isLooping;
 
-		bool _sharedTextureCreated;
+	bool				_sharedTextureCreated;
 		
-		cinder::gl::TextureRef _tex;
+	ci::gl::TextureRef	_tex;
 	
-		BOOL InitInstance();
-		void                OnPlayerEvent(HWND hwnd, WPARAM pUnkPtr);
+	BOOL	InitInstance();
+	void	OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
-	public:
+public:
 	CPlayer*	_player;
 
 	int _id;
@@ -61,34 +52,34 @@ class ciWMFVideoPlayer {
 	ciWMFVideoPlayer();
 	 ~ciWMFVideoPlayer();
 
-	 bool				loadMovie(std::string name, std::string audioDevice="");
-	 void				close();
-	 void				update();
+	bool	loadMovie( std::string name, std::string audioDevice="" );
+	void	close();
+	void	update();
 	
-	 void				play();
-	 void				stop();		
-	 void				pause();
+	void	play();
+	void	stop();		
+	void	pause();
+	
+	float	getPosition();
+	float	getDuration();
+	
+	void	setPosition( float pos );
+	
+	float	getHeight();
+	float	getWidth();
+	
+	bool	isPlaying(); 
+	bool	isStopped();
+	bool	isPaused();
+	
+	void	setLoop( bool isLooping );
+	bool	isLooping() const { return _isLooping; }
 
-	 float				getPosition();
-	 float				getDuration();
+	void	draw( int x, int y , int w, int h );
+	void	draw( int x, int y ) { draw( x, y, getWidth(), getHeight() ); }
 
-	 void				setPosition(float pos);
-
-	 float				getHeight();
-	 float				getWidth();
-
-	 bool				isPlaying(); 
-	 bool				isStopped();
-	 bool				isPaused();
-
-	 void				setLoop(bool isLooping);
-	 bool				isLooping() { return _isLooping; }
-
-	void draw(int x, int y , int w, int h);
-	void draw(int x, int y) { draw(x,y,getWidth(),getHeight()); }
-
-	HWND getHandle() { return _hwndPlayer;}
-	LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+	HWND getHandle() const { return _hwndPlayer; }
+	LRESULT WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
 	static void forceExit();
 };

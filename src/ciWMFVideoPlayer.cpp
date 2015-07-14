@@ -1,8 +1,9 @@
-#include "cinder/app/App.h"
-#include "cinder/app/AppBasic.h"
-#include "cinder/gl/Texture.h"
 #include "ciWMFVideoPlayerUtils.h"
 #include "ciWMFVideoPlayer.h"
+
+#include "cinder/app/App.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/Log.h"
 
 using namespace std;
 using namespace ci;
@@ -51,12 +52,12 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer() {
         SafeRelease(&_player);
     }
 
-	std::cout << "Player " << _id << " Terminated" << std::endl;
+	CI_LOG_I( "Player " << _id << " Terminated" );
 	_instanceCount--;
 	if (_instanceCount == 0) 
 	{
 		 MFShutdown();
-		 cout << "Shutting down MF" << endl;
+		 CI_LOG_I( "Shutting down MF" );
 	}
 }
 
@@ -64,7 +65,7 @@ void ciWMFVideoPlayer::forceExit()
 {
 	if (_instanceCount != 0) 
 	{
-		cout << "Shutting down MF some ciWMFVideoPlayer remains" << endl;
+		CI_LOG_I( "Shutting down MF some ciWMFVideoPlayer remains" );
 		MFShutdown();
 	}
 }
@@ -81,13 +82,12 @@ void ciWMFVideoPlayer::forceExit()
 	DWORD fileAttr = GetFileAttributesW(path.c_str());
 	if (fileAttr == INVALID_FILE_ATTRIBUTES) 
 	{
-		stringstream s;
-		s << "The video file '" << name << "'is missing.";
+		CI_LOG_E( "The video file '" << name << "'is missing." );
 		//ofLog(OF_LOG_ERROR,"ciWMFVideoPlayer:" + s.str());
 		return false;
 	}
 	
-	//cout << "Videoplayer[" << _id << "] loading " << name << endl;
+	//CI_LOG_I( "Videoplayer[" << _id << "] loading " << name );
 	HRESULT hr = S_OK;
 	string s = path.string();
 	std::wstring w(s.length(), L' ');
