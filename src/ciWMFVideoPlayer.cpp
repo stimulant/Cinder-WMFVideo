@@ -15,6 +15,19 @@ list<PlayerItem> g_WMFVideoPlayers;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 // Message handlers
 
+ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVideoPlayer &video, uint8_t textureUnit ) :
+	mCtx( gl::context() ), mTarget( video._tex->getTarget() ), mTextureUnit( textureUnit ), mPlayer( video._player )
+{
+	mPlayer->m_pEVRPresenter->lockSharedTexture();
+	mCtx->pushTextureBinding( mTarget, video._tex->getId(), mTextureUnit );
+}
+
+ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
+{
+	mCtx->popTextureBinding( mTarget, mTextureUnit );
+	mPlayer->m_pEVRPresenter->unlockSharedTexture();
+}
+
 ciWMFVideoPlayer* findPlayers(HWND hwnd)
 {
 	for each (PlayerItem e in g_WMFVideoPlayers)
@@ -70,7 +83,7 @@ void ciWMFVideoPlayer::forceExit()
 	}
 }
 
- bool ciWMFVideoPlayer::loadMovie(string name, string audioDevice) 
+bool ciWMFVideoPlayer::loadMovie( const fs::path &filePath, const string &audioDevice ) 
  {
 	 if (!_player) 
 	 { 
@@ -78,18 +91,17 @@ void ciWMFVideoPlayer::forceExit()
 		 return false;
 	}
 
-	fs::path path = getAssetPath(name);
-	DWORD fileAttr = GetFileAttributesW(path.c_str());
+	DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
 	if (fileAttr == INVALID_FILE_ATTRIBUTES) 
 	{
-		CI_LOG_E( "The video file '" << name << "'is missing." );
+		CI_LOG_E( "The video file could not be found: '" << filePath );
 		//ofLog(OF_LOG_ERROR,"ciWMFVideoPlayer:" + s.str());
 		return false;
 	}
 	
 	//CI_LOG_I( "Videoplayer[" << _id << "] loading " << name );
 	HRESULT hr = S_OK;
-	string s = path.string();
+	string s = filePath.string();
 	std::wstring w(s.length(), L' ');
 	std::copy(s.begin(), s.end(), w.begin());
 
@@ -129,7 +141,7 @@ void ciWMFVideoPlayer::forceExit()
 	}
 
 	_waitForLoadedToPlay = false;
-	return false;
+	return true;
  }
 
  void ciWMFVideoPlayer::draw(int x, int y, int w, int h) 

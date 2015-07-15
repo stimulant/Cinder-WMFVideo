@@ -45,14 +45,27 @@ private:
 	void	OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
 public:
-	CPlayer*	_player;
+	friend struct ScopedVideoTextureBind;
+	struct ScopedVideoTextureBind : private ci::Noncopyable
+	{
+	public:
+		ScopedVideoTextureBind( const ciWMFVideoPlayer &video, uint8_t textureUnit );
+		~ScopedVideoTextureBind();
 
-	int _id;
+	private:
+		ci::gl::Context *mCtx;
+		GLenum			mTarget;
+		uint8_t			mTextureUnit;
+		CPlayer			*mPlayer;
+	};
+
+	CPlayer*	_player;
+	int			_id;
 	
 	ciWMFVideoPlayer();
-	 ~ciWMFVideoPlayer();
+	~ciWMFVideoPlayer();
 
-	bool	loadMovie( std::string name, std::string audioDevice="" );
+	bool	loadMovie( const ci::fs::path &filePath, const std::string &audioDevice = "" );
 	void	close();
 	void	update();
 	
