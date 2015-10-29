@@ -211,6 +211,49 @@ void ciWMFVideoPlayer::setPosition(float pos)
 	_player->setPosition(pos);
 }
 
+float ciWMFVideoPlayer::getSpeed() {
+	return _player->GetPlaybackRate();
+}
+
+bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning ) {
+	//according to MSDN playback must be stopped to change between forward and reverse playback and vice versa
+	//but is only required to pause in order to shift between forward rates
+	float curRate = getSpeed();
+	HRESULT hr = S_OK;
+	bool resume = isPlaying();
+	if ( curRate >= 0 && speed >= 0 ){
+		if ( !isPaused() )
+			_player->Pause();
+		hr = _player->SetPlaybackRate( useThinning, speed );
+		if ( resume )
+			_player->Play();
+	}
+	else {
+		//setting to a negative doesn't seem to work though no error is thrown...
+		/*float position = getPosition();
+		if(isPlaying())
+		_player->Stop();
+		hr = _player->SetPlaybackRate(useThinning, speed);
+		if(resume){
+		_player->Play();
+		_player->setPosition(position);
+		}*/
+	}
+	if ( hr == S_OK )
+		return true;
+	else{
+		if ( hr == MF_E_REVERSE_UNSUPPORTED )
+			cout << "The object does not support reverse playback." << endl;
+		if ( hr == MF_E_THINNING_UNSUPPORTED )
+			cout << "The object does not support thinning." << endl;
+		if ( hr == MF_E_UNSUPPORTED_RATE )
+			cout << "The object does not support the requested playback rate." << endl;
+		if ( hr == MF_E_UNSUPPORTED_RATE_TRANSITION )
+			cout << "The object cannot change to the new rate while in the running state." << endl;
+		return false;
+	}
+}
+
 float ciWMFVideoPlayer::getHeight() { return _player->getHeight(); }
 float ciWMFVideoPlayer::getWidth() { return _player->getWidth(); }
 void  ciWMFVideoPlayer::setLoop(bool isLooping) { _isLooping = isLooping; _player->setLooping(isLooping); }

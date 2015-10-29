@@ -48,13 +48,15 @@ const UINT WM_APP_PLAYER_EVENT = WM_APP + 1;
 
 enum PlayerState
 {
-    Closed = 0,     // No session.
-    Ready,          // Session was created, ready to open a file. 
-    OpenPending,    // Session is opening a file.
-    Started,        // Session is playing a file.
-    Paused,         // Session is paused.
-    Stopped,        // Session is stopped (ready to play). 
-    Closing         // Application has closed the session, but is waiting for MESessionClosed.
+    Closed = 0,			// No session.
+    Ready,				// Session was created, ready to open a file. 
+	OpenAsyncPending,	// Session is creating URL resource
+	OpenAsyncComplete,	// Session finished opening URL
+    OpenPending,		// Session is opening a file.
+    Started,			// Session is playing a file.
+    Paused,				// Session is paused.
+    Stopped,			// Session is stopped (ready to play). 
+    Closing				// Application has closed the session, but is waiting for MESessionClosed.
 };
 
 class CPlayer : public IMFAsyncCallback
@@ -76,30 +78,54 @@ public:
     STDMETHODIMP  Invoke(IMFAsyncResult* pAsyncResult);
 
     // Playback
-    HRESULT       OpenURL(const WCHAR *sURL, const WCHAR *audioDeviceId = 0);
+    HRESULT			OpenURL(const WCHAR *sURL, const WCHAR *audioDeviceId = 0);
+
+	HRESULT			OpenURLAsync( const WCHAR *sURL );
+	HRESULT			EndOpenURL( const WCHAR *audioDeviceId = 0 );
 
 	//Open multiple url in a same topology... Play with that of you want to do some video syncing
-	HRESULT       OpenMultipleURL(std::vector<const WCHAR *> &sURL);
-    HRESULT       Play();
-    HRESULT       Pause();
-    HRESULT       Stop();
-    HRESULT       Shutdown();
-    HRESULT       HandleEvent(UINT_PTR pUnkPtr);
-    PlayerState   GetState() const { return m_state; }
-    BOOL          HasVideo() const { return (m_pVideoDisplay != NULL);  }
+	HRESULT			OpenMultipleURL(std::vector<const WCHAR *> &sURL);
+    HRESULT			Play();
+    HRESULT			Pause();
+    HRESULT			Stop();
+    HRESULT			Shutdown();
+    HRESULT			HandleEvent(UINT_PTR pUnkPtr);
+	HRESULT			GetBufferProgress( DWORD *pProgress );
+    PlayerState		GetState() const { return m_state; }
+    BOOL			HasVideo() const { return (m_pVideoDisplay != NULL);  }
+
+	BOOL canRewind() {
+		DWORD       m_caps;
+		m_pSession->GetSessionCapabilities( &m_caps );
+		return ( ( m_caps & MFSESSIONCAP_RATE_REVERSE ) == MFSESSIONCAP_RATE_REVERSE );
+	}
 
 	float getDuration();
 	float getPosition();
+
+	HRESULT		  SetPlaybackRate( BOOL bThin, float rateRequested );
+	float		  GetPlaybackRate();
+
 	float getWidth() { return _width; }
-	float getHeight() { 
-		return _height;
-	}
+	float getHeight() { return _height; }
 
 	HRESULT setPosition(float pos);
 
-	bool _isLooping;
 	bool isLooping() { return _isLooping; }
-	void setLooping(bool isLooping) { _isLooping = isLooping; }
+	void setLooping( bool isLooping ) { _isLooping = isLooping; }
+
+	HRESULT			setVolume( float vol );
+	float			getVolume() { return _currentVolume; }
+
+	float			getFrameRate();
+	int				getCurrentFrame();
+	int				getTotalNumFrames() { return numFrames; }
+
+
+	void			firstFrame() { setPosition( 0 ); }
+	/*void			nextFrame();
+	void			previousFrame();*/
+	BOOL			getIsDone() { return isDone; }
 
 protected:
     
@@ -131,13 +157,19 @@ protected:
     long                    m_nRefCount;        // Reference count.
 
     IMFSequencerSource		*m_pSequencerSource;
+	IMFSourceResolver		*m_pSourceResolver;
     IMFMediaSource          *m_pSource;
     IMFVideoDisplayControl  *m_pVideoDisplay;
 	MFSequencerElementId	_previousTopoID;
     HWND                    m_hwndVideo;        // Video window.
     HWND                    m_hwndEvent;        // App window to receive events.
     PlayerState             m_state;            // Current state of the media session.
+	bool					isDone;
+	bool					_isLooping;
     HANDLE                  m_hCloseEvent;      // Event to wait on while closing.
+	IMFAudioStreamVolume	*m_pVolumeControl;
+
+	int						numFrames;
 
 public:
 	EVRCustomPresenter		*m_pEVRPresenter; // Custom EVR for texture sharing
@@ -147,8 +179,9 @@ public:
 	std::vector<IMFMediaSource*>     v_sources;        //for doing frame symc... this is experimental
 
 protected:
-	int _width;
-	int _height;
+	int						_width;
+	int						_height;
+	float					_currentVolume;
 };
 
 #endif PLAYER_H

@@ -3,6 +3,28 @@ Cinder-WMFVideo
 
 Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer addon](https://github.com/secondstory/ofxWMFVideoPlayer).  Allows playback of videos and routing of audio to specific audio devices.
 
+# Revision History
+
+## v.3.1
+- I forked djmike's most recent version
+- Attempt to merge the fork with [DomAmato's update](https://github.com/DomAmato/ofxWMFVideoPlayer) to the original ofxWMFVideoPlayer
+-- Variable rate video playback
+-- Asynchronous video loading
+- Added guards to keep IMFTrackedSample from being re-defined
+- Converted some printed error messages to Cinders new error log system
+
+## v.3
+- djmike forked Stimulants version, [updating it in a number of ways](https://github.com/djmike/Cinder-WMFVideo)
+- Cinder 0.9.0 compatible
+- Video-2-Texture Functionality
+- Various other minor features/improvements
+
+## v.2
+- Stimulant ported the 0.9 release of ofxWMFVideoPlayer to Cinder (~0.8.6), creating [Cinder-WMFVideo](https://github.com/stimulant/Cinder-WMFVideo)
+
+## V.1
+- ofxWMFVideoPlayer release 0.9 by Philippe Laulheret for [Second Story](http://www.secondstory.com/)
+
 # Installation
 - You will need to modify your Cinder build slightly to upgrade to GLee 5.5 which supports the WGL_NV_DX_interop.
     * Copy cinder-src\GLee.c to Cinder\src\cinder\gl\

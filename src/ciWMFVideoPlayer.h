@@ -84,6 +84,9 @@ public:
 	bool	isPlaying(); 
 	bool	isStopped();
 	bool	isPaused();
+
+	bool	setSpeed( float speed, bool useThinning = false ); //thinning drops delta frames for faster playback though appears to be choppy, default is false
+	float	getSpeed();
 	
 	void	setLoop( bool isLooping );
 	bool	isLooping() const { return _isLooping; }
