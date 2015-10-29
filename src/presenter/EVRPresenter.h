@@ -55,6 +55,9 @@ static const GUID MFSamplePresenter_SampleSwapChain =
 { 0xad885bd1, 0x7def, 0x414a, { 0xb5, 0xb0, 0xd3, 0xd2, 0x63, 0xd6, 0xe9, 0x6d } };
 
 
+#ifndef __IMFTrackedSample_INTERFACE_DEFINED__
+#define __IMFTrackedSample_INTERFACE_DEFINED__
+
 MIDL_INTERFACE("245BF8E9-0755-40f7-88A5-AE0F18D55E17")
 IMFTrackedSample : public IUnknown
 {
@@ -65,6 +68,8 @@ public:
         /* [unique][in] */ IUnknown *pUnkState) = 0;
         
 };
+
+#endif
 
 
 // Project headers.
