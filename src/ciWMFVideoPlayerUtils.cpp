@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <mmdeviceapi.h>
 #include <Functiondiscoverykeys_devpkey.h>
-#include <iostream>
 #include <shobjidl.h> 
 
 #pragma comment(lib, "shlwapi")
@@ -426,7 +425,7 @@ HRESULT CPlayer::setPosition(float pos)
 {
 	if (m_state == OpenPending)
 	{
-		printf("ciWMFPlayer : Error cannot seek during opening\n");
+		CI_LOG_E("Error cannot seek during opening");
 		return S_FALSE;
 	}
 
