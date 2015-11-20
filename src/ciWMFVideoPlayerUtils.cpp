@@ -26,6 +26,9 @@
 
 using namespace std;
 
+const std::string g_PlayerStateString[] = { "Closed", "Ready", "OpenAsyncPending", "OpenAsyncComplete", "OpenPending", "Started", "Paused", "Stopped", "Closing" };
+const std::string& GetPlayerStateString(const PlayerState p) { return g_PlayerStateString[p]; };
+
 template <class Q>
 HRESULT GetEventObject(IMFMediaEvent *pEvent, Q **ppObject)
 {
@@ -309,8 +312,23 @@ HRESULT CPlayer::OpenURL( const WCHAR *sURL, const WCHAR *audioDeviceId )
 	EndOpenURL( audioDeviceId );
 
 done:
-	if ( FAILED( hr ) )
+	if (FAILED(hr))
+	{
 		m_state = Closed;
+
+		switch (hr)
+		{
+		case MF_E_SOURCERESOLVER_MUTUALLY_EXCLUSIVE_FLAGS:	// 	The dwFlags parameter contains mutually exclusive flags.
+			CI_LOG_E("MF_E_SOURCERESOLVER_MUTUALLY_EXCLUSIVE_FLAGS"); break;
+		case MF_E_UNSUPPORTED_SCHEME:						//	The URL scheme is not supported.
+			CI_LOG_E("MF_E_UNSUPPORTED_SCHEME"); break;
+		case MF_E_UNSUPPORTED_BYTESTREAM_TYPE:
+			CI_LOG_E("MF_E_UNSUPPORTED_BYTESTREAM_TYPE"); break;
+		default:
+			CI_LOG_E("Unknown eror"); break;
+		break;
+		}
+	}
 
 	return hr;
 }

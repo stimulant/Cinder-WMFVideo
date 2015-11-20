@@ -91,15 +91,16 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path &filePath, const string &audioD
 		 return false;
 	}
 
-	DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
-	if (fileAttr == INVALID_FILE_ATTRIBUTES) 
-	{
-		CI_LOG_E( "The video file could not be found: '" << filePath );
-		//ofLog(OF_LOG_ERROR,"ciWMFVideoPlayer:" + s.str());
-		return false;
-	}
+	//DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
+	//if (fileAttr == INVALID_FILE_ATTRIBUTES) 
+	//{
+	//	CI_LOG_E( "The video file could not be found: '" << filePath );
+	//	//ofLog(OF_LOG_ERROR,"ciWMFVideoPlayer:" + s.str());
+	//	return false;
+	//}
 	
 	//CI_LOG_I( "Videoplayer[" << _id << "] loading " << name );
+
 	HRESULT hr = S_OK;
 	string s = filePath.string();
 	std::wstring w(s.length(), L' ');
@@ -109,6 +110,9 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path &filePath, const string &audioD
 	std::copy(audioDevice.begin(), audioDevice.end(), a.begin());
 
 	hr = _player->OpenURL( w.c_str(), a.c_str() );
+
+//	CI_LOG_D(GetPlayerStateString(_player->GetState()));
+
 	if (!_sharedTextureCreated)
 	{
 		_width = _player->getWidth();

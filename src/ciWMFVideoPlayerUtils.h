@@ -59,6 +59,8 @@ enum PlayerState
     Closing				// Application has closed the session, but is waiting for MESessionClosed.
 };
 
+const std::string& GetPlayerStateString(const PlayerState p);
+
 class CPlayer : public IMFAsyncCallback
 {
 public:
