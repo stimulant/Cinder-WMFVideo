@@ -676,8 +676,6 @@ done:
     return hr;
 }
 
-
-
 //-----------------------------------------------------------------------------
 // PresentSwapChain
 //
@@ -693,8 +691,8 @@ done:
 
 HRESULT D3DPresentEngine::PresentSwapChain(IDirect3DSwapChain9* pSwapChain, IDirect3DSurface9* pSurface)
 {
-    HRESULT hr = S_OK;
-
+	//-----------------------------------------------------------------------------
+	// Copy latest D3D frame to our OpenGL/D3D shared surface...
 
 	//pSwapChain->GetFrontBufferData(d3d_shared_surface);
 	IDirect3DSurface9 *surface;
@@ -706,18 +704,20 @@ HRESULT D3DPresentEngine::PresentSwapChain(IDirect3DSwapChain9* pSwapChain, IDir
 	}
 	SAFE_RELEASE(surface);
 
-    if (m_hwnd == NULL)
+	//-----------------------------------------------------------------------------
+	// Original code from the WMF EVRpresenter sample code...
+
+	HRESULT hr = S_OK;
+	
+	if (m_hwnd == NULL)
     {
         return MF_E_INVALIDREQUEST;
     }
 	
     hr = pSwapChain->Present(NULL, &m_rcDestRect, m_hwnd, NULL, 0);
-
 	
-
     LOG_MSG_IF_FAILED(L"D3DPresentEngine::PresentSwapChain, IDirect3DSwapChain9::Present failed.", hr);
-
-
+	
     return hr;
 }
 
