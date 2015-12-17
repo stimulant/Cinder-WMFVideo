@@ -63,6 +63,8 @@ namespace MediaFoundationSamples
 #undef USE_LOGGING
 #endif
 
+#undef USE_LOGGING
+
 #ifdef USE_LOGGING
     #define TRACE_INIT() DebugLog::Initialize()
     #define TRACE(x) DebugLog::Trace x
