@@ -630,7 +630,7 @@ HRESULT CPlayer::HandleEvent(UINT_PTR pEventPtr)
 
     case MEEndOfPresentation:
         hr = OnPresentationEnded(pEvent);
-		CI_LOG_V("Presentation Ended");
+		//CI_LOG_V("Presentation Ended");
         break;
 
     case MENewPresentation:
@@ -649,7 +649,7 @@ HRESULT CPlayer::HandleEvent(UINT_PTR pEventPtr)
 		break;
 
 	case MESessionStarted:
-		CI_LOG_V( "Started Session" );
+		//CI_LOG_V( "Started Session" );
 		break;
 	case MEBufferingStarted:
 		CI_LOG_I( "Buffering..." );
