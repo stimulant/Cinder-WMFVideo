@@ -15,17 +15,20 @@ list<PlayerItem> g_WMFVideoPlayers;
 LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 // Message handlers
 
-ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVideoPlayer& video, uint8_t textureUnit ) :
-	mCtx( gl::context() ), mTarget( video._tex->getTarget() ), mTextureUnit( textureUnit ), mPlayer( video._player )
+ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVideoPlayer& video, uint8_t textureUnit )
+	: mCtx( gl::context() )
+	, mTarget( video.mTex->getTarget() )
+	, mTextureUnit( textureUnit )
+	, mPlayer( video.mPlayer )
 {
-	mPlayer->m_pEVRPresenter->lockSharedTexture();
-	mCtx->pushTextureBinding( mTarget, video._tex->getId(), mTextureUnit );
+	mPlayer->mEVRPresenter->lockSharedTexture();
+	mCtx->pushTextureBinding( mTarget, video.mTex->getId(), mTextureUnit );
 }
 
 ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
 {
 	mCtx->popTextureBinding( mTarget, mTextureUnit );
-	mPlayer->m_pEVRPresenter->unlockSharedTexture();
+	mPlayer->mEVRPresenter->unlockSharedTexture();
 }
 
 ciWMFVideoPlayer* findPlayers( HWND hwnd )
@@ -37,12 +40,12 @@ ciWMFVideoPlayer* findPlayers( HWND hwnd )
 	return NULL;
 }
 
-int  ciWMFVideoPlayer::_instanceCount = 0;
+int  ciWMFVideoPlayer::mInstanceCount = 0;
 
 ciWMFVideoPlayer::ciWMFVideoPlayer()
-	: _player( NULL )
+	: mPlayer( NULL )
 {
-	if( _instanceCount == 0 )  {
+	if( mInstanceCount == 0 )  {
 		HRESULT hr = MFStartup( MF_VERSION );
 
 		if( !SUCCEEDED( hr ) ) {
@@ -50,12 +53,12 @@ ciWMFVideoPlayer::ciWMFVideoPlayer()
 		}
 	}
 
-	_id = _instanceCount;
-	_instanceCount++;
+	mId = mInstanceCount;
+	mInstanceCount++;
 	this->InitInstance();
 
-	_waitForLoadedToPlay = false;
-	_sharedTextureCreated = false;
+	mWaitForLoadedToPlay = false;
+	mSharedTextureCreated = false;
 
 	// Make sure the video is closed before the rendering context is lost.
 	auto window = app::App::get()->getWindow();
@@ -69,16 +72,16 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 {
 	mWinCloseConnection.disconnect();
 
-	if( _player ) {
-		_player->Shutdown();
-		//if (_sharedTextureCreated) _player->m_pEVRPresenter->releaseSharedTexture();
-		SafeRelease( &_player );
+	if( mPlayer ) {
+		mPlayer->Shutdown();
+		//if (mSharedTextureCreated) mPlayer->mEVRPresenter->releaseSharedTexture();
+		SafeRelease( &mPlayer );
 	}
 
-	CI_LOG_I( "Player " << _id << " Terminated" );
-	_instanceCount--;
+	CI_LOG_I( "Player " << mId << " Terminated" );
+	mInstanceCount--;
 
-	if( _instanceCount == 0 ) {
+	if( mInstanceCount == 0 ) {
 		MFShutdown();
 		CI_LOG_I( "Shutting down MF" );
 	}
@@ -86,7 +89,7 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 
 void ciWMFVideoPlayer::forceExit()
 {
-	if( _instanceCount != 0 ) {
+	if( mInstanceCount != 0 ) {
 		CI_LOG_I( "Shutting down MF some ciWMFVideoPlayer remains" );
 		MFShutdown();
 	}
@@ -94,7 +97,7 @@ void ciWMFVideoPlayer::forceExit()
 
 bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice )
 {
-	if( !_player ) {
+	if( !mPlayer ) {
 		//ofLogError("ciWMFVideoPlayer") << "Player not created. Can't open the movie.";
 		return false;
 	}
@@ -107,7 +110,7 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 	//	return false;
 	//}
 
-	//CI_LOG_I( "Videoplayer[" << _id << "] loading " << name );
+	//CI_LOG_I( "Videoplayer[" << mId << "] loading " << name );
 
 	HRESULT hr = S_OK;
 	string s = filePath.string();
@@ -117,84 +120,84 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 	std::wstring a( audioDevice.length(), L' ' );
 	std::copy( audioDevice.begin(), audioDevice.end(), a.begin() );
 
-	hr = _player->OpenURL( w.c_str(), a.c_str() );
+	hr = mPlayer->OpenURL( w.c_str(), a.c_str() );
 
-	//	CI_LOG_D(GetPlayerStateString(_player->GetState()));
+	//	CI_LOG_D(GetPlayerStateString(mPlayer->GetState()));
 
-	if( !_sharedTextureCreated ) {
-		_width = _player->getWidth();
-		_height = _player->getHeight();
+	if( !mSharedTextureCreated ) {
+		mWidth = mPlayer->getWidth();
+		mHeight = mPlayer->getHeight();
 
 		gl::Texture::Format format;
 		format.setInternalFormat( GL_RGBA );
 		format.setTargetRect();
 		format.loadTopDown( true );
-		_tex = gl::Texture::create( _width, _height, format );
-		_player->m_pEVRPresenter->createSharedTexture( _width, _height, _tex->getId() );
-		_sharedTextureCreated = true;
+		mTex = gl::Texture::create( mWidth, mHeight, format );
+		mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+		mSharedTextureCreated = true;
 	}
 	else {
-		if( ( _width != _player->getWidth() ) || ( _height != _player->getHeight() ) ) {
-			_player->m_pEVRPresenter->releaseSharedTexture();
+		if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
+			mPlayer->mEVRPresenter->releaseSharedTexture();
 
-			_width = _player->getWidth();
-			_height = _player->getHeight();
+			mWidth = mPlayer->getWidth();
+			mHeight = mPlayer->getHeight();
 
 			gl::Texture::Format format;
 			format.setInternalFormat( GL_RGBA );
 			format.setTargetRect();
 			format.loadTopDown( true );
-			_tex = gl::Texture::create( _width, _height, format );
-			_player->m_pEVRPresenter->createSharedTexture( _width, _height, _tex->getId() );
+			mTex = gl::Texture::create( mWidth, mHeight, format );
+			mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
 		}
 	}
 
-	_waitForLoadedToPlay = false;
+	mWaitForLoadedToPlay = false;
 	return true;
 }
 
 void ciWMFVideoPlayer::draw( int x, int y, int w, int h )
 {
-	if( !_player ) {
+	if( !mPlayer ) {
 		return;
 	}
 
-	_player->m_pEVRPresenter->lockSharedTexture();
+	mPlayer->mEVRPresenter->lockSharedTexture();
 
-	if( _tex ) {
-		gl::draw( _tex, Rectf( x, y, x + w, y + h ) );
+	if( mTex ) {
+		gl::draw( mTex, Rectf( x, y, x + w, y + h ) );
 	}
 
-	_player->m_pEVRPresenter->unlockSharedTexture();
+	mPlayer->mEVRPresenter->unlockSharedTexture();
 }
 
 bool ciWMFVideoPlayer::isPlaying()
 {
-	return _player->GetState() == Started;
+	return mPlayer->GetState() == STARTED;
 }
 
 bool ciWMFVideoPlayer::isStopped()
 {
-	return ( _player->GetState() == Stopped || _player->GetState() == Paused );
+	return ( mPlayer->GetState() == STOPPED || mPlayer->GetState() == PAUSED );
 }
 
 bool ciWMFVideoPlayer::isPaused()
 {
-	return _player->GetState() == Paused;
+	return mPlayer->GetState() == PAUSED;
 }
 
 void ciWMFVideoPlayer::close()
 {
-	_player->Shutdown();
+	mPlayer->Shutdown();
 }
 
 void ciWMFVideoPlayer::update()
 {
-	if( !_player ) { return; }
+	if( !mPlayer ) { return; }
 
-	if( ( _waitForLoadedToPlay ) && _player->GetState() == Paused ) {
-		_waitForLoadedToPlay = false;
-		_player->Play();
+	if( ( mWaitForLoadedToPlay ) && mPlayer->GetState() == PAUSED ) {
+		mWaitForLoadedToPlay = false;
+		mPlayer->Play();
 	}
 
 	return;
@@ -202,41 +205,41 @@ void ciWMFVideoPlayer::update()
 
 void ciWMFVideoPlayer::play()
 {
-	if( !_player ) { return; }
+	if( !mPlayer ) { return; }
 
-	if( _player->GetState()  == OpenPending ) { _waitForLoadedToPlay = true; }
+	if( mPlayer->GetState()  == OPEN_PENDING ) { mWaitForLoadedToPlay = true; }
 
-	_player->Play();
+	mPlayer->Play();
 }
 
 void ciWMFVideoPlayer::stop()
 {
-	_player->Stop();
+	mPlayer->Stop();
 }
 
 void ciWMFVideoPlayer::pause()
 {
-	_player->Pause();
+	mPlayer->Pause();
 }
 
 float ciWMFVideoPlayer::getPosition()
 {
-	return _player->getPosition();
+	return mPlayer->getPosition();
 }
 
 float ciWMFVideoPlayer::getDuration()
 {
-	return _player->getDuration();
+	return mPlayer->getDuration();
 }
 
 void ciWMFVideoPlayer::setPosition( float pos )
 {
-	_player->setPosition( pos );
+	mPlayer->setPosition( pos );
 }
 
 float ciWMFVideoPlayer::getSpeed()
 {
-	return _player->GetPlaybackRate();
+	return mPlayer->GetPlaybackRate();
 }
 
 bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
@@ -249,24 +252,24 @@ bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
 
 	if( curRate >= 0 && speed >= 0 ) {
 		if( !isPaused() ) {
-			_player->Pause();
+			mPlayer->Pause();
 		}
 
-		hr = _player->SetPlaybackRate( useThinning, speed );
+		hr = mPlayer->SetPlaybackRate( useThinning, speed );
 
 		if( resume ) {
-			_player->Play();
+			mPlayer->Play();
 		}
 	}
 	else {
 		//setting to a negative doesn't seem to work though no error is thrown...
 		/*float position = getPosition();
 		if(isPlaying())
-		_player->Stop();
-		hr = _player->SetPlaybackRate(useThinning, speed);
+		mPlayer->Stop();
+		hr = mPlayer->SetPlaybackRate(useThinning, speed);
 		if(resume){
-		_player->Play();
-		_player->setPosition(position);
+		mPlayer->Play();
+		mPlayer->setPosition(position);
 		}*/
 	}
 
@@ -296,14 +299,14 @@ bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
 
 PresentationEndedSignal& ciWMFVideoPlayer::getPresentationEndedSignal()
 {
-	if (_player) {
-		return _player->getPresentationEndedSignal();
+	if( mPlayer ) {
+		return mPlayer->getPresentationEndedSignal();
 	}
 }
 
-float ciWMFVideoPlayer::getHeight() { return _player->getHeight(); }
-float ciWMFVideoPlayer::getWidth() { return _player->getWidth(); }
-void  ciWMFVideoPlayer::setLoop( bool isLooping ) { _isLooping = isLooping; _player->setLooping( isLooping ); }
+float ciWMFVideoPlayer::getHeight() { return mPlayer->getHeight(); }
+float ciWMFVideoPlayer::getWidth() { return mPlayer->getWidth(); }
+void  ciWMFVideoPlayer::setLoop( bool isLooping ) { mIsLooping = isLooping; mPlayer->setLooping( isLooping ); }
 
 //-----------------------------------
 // Prvate Functions
@@ -312,7 +315,7 @@ void  ciWMFVideoPlayer::setLoop( bool isLooping ) { _isLooping = isLooping; _pla
 // Handler for Media Session events.
 void ciWMFVideoPlayer::OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr )
 {
-	HRESULT hr = _player->HandleEvent( pUnkPtr );
+	HRESULT hr = mPlayer->HandleEvent( pUnkPtr );
 
 	if( FAILED( hr ) ) {
 		//ofLogError("ciWMFVideoPlayer", "An error occurred.");
@@ -390,7 +393,7 @@ BOOL ciWMFVideoPlayer::InitInstance()
 	}
 
 	g_WMFVideoPlayers.push_back( std::pair<HWND, ciWMFVideoPlayer*>( hwnd, this ) );
-	HRESULT hr = CPlayer::CreateInstance( hwnd, hwnd, &_player );
+	HRESULT hr = CPlayer::CreateInstance( hwnd, hwnd, &mPlayer );
 
 	LONG style2 = ::GetWindowLong( hwnd, GWL_STYLE );
 	style2 &= ~WS_DLGFRAME;
@@ -402,7 +405,7 @@ BOOL ciWMFVideoPlayer::InitInstance()
 	::SetWindowLong( hwnd, GWL_STYLE, style2 );
 	::SetWindowLong( hwnd, GWL_EXSTYLE, exstyle2 );
 
-	_hwndPlayer = hwnd;
+	mHWNDPlayer = hwnd;
 	UpdateWindow( hwnd );
 
 	return TRUE;

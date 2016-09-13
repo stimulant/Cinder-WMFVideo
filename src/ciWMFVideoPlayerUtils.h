@@ -47,15 +47,15 @@ const UINT WM_APP_PLAYER_EVENT = WM_APP + 1;
 // WPARAM = IMFMediaEvent*, WPARAM = MediaEventType
 
 enum PlayerState {
-	Closed = 0,			// No session.
-	Ready,				// Session was created, ready to open a file.
-	OpenAsyncPending,	// Session is creating URL resource
-	OpenAsyncComplete,	// Session finished opening URL
-	OpenPending,		// Session is opening a file.
-	Started,			// Session is playing a file.
-	Paused,				// Session is paused.
-	Stopped,			// Session is stopped (ready to play).
-	Closing				// Application has closed the session, but is waiting for MESessionClosed.
+	CLOSED = 0,			// No session.
+	READY,				// Session was created, ready to open a file.
+	OPEN_ASYNC_PENDING,	// Session is creating URL resource
+	OPEN_ASYNC_COMPLETE,	// Session finished opening URL
+	OPEN_PENDING,		// Session is opening a file.
+	STARTED,			// Session is playing a file.
+	PAUSED,				// Session is paused.
+	STOPPED,			// Session is stopped (ready to play).
+	CLOSING				// Application has closed the session, but is waiting for MESessionClosed.
 };
 
 const std::string& GetPlayerStateString( const PlayerState p );
@@ -94,13 +94,13 @@ class CPlayer : public IMFAsyncCallback
 		HRESULT Shutdown();
 		HRESULT HandleEvent( UINT_PTR pUnkPtr );
 		HRESULT GetBufferProgress( DWORD* pProgress );
-		PlayerState GetState() const { return m_state; }
-		BOOL HasVideo() const { return ( m_pVideoDisplay != NULL );  }
+		PlayerState GetState() const { return mState; }
+		BOOL HasVideo() const { return ( mVideoDisplay != NULL );  }
 
 		BOOL canRewind()
 		{
 			DWORD m_caps;
-			m_pSession->GetSessionCapabilities( &m_caps );
+			mSession->GetSessionCapabilities( &m_caps );
 			return ( ( m_caps & MFSESSIONCAP_RATE_REVERSE ) == MFSESSIONCAP_RATE_REVERSE );
 		}
 
@@ -110,26 +110,26 @@ class CPlayer : public IMFAsyncCallback
 		HRESULT SetPlaybackRate( BOOL bThin, float rateRequested );
 		float GetPlaybackRate();
 
-		float getWidth() { return _width; }
-		float getHeight() { return _height; }
+		float getWidth() { return mWidth; }
+		float getHeight() { return mHeight; }
 
 		HRESULT setPosition( float pos );
 
-		bool isLooping() { return _isLooping; }
-		void setLooping( bool isLooping ) { _isLooping = isLooping; }
+		bool isLooping() { return mIsLooping; }
+		void setLooping( bool isLooping ) { mIsLooping = isLooping; }
 
 		HRESULT setVolume( float vol );
-		float getVolume() { return _currentVolume; }
+		float getVolume() { return mCurrentVolume; }
 
 		float getFrameRate();
 		int getCurrentFrame();
-		int getTotalNumFrames() { return numFrames; }
+		int getTotalNumFrames() { return mNumFrames; }
 
 		void firstFrame() { setPosition( 0 ); }
 		// void nextFrame();
 		// void previousFrame();
 
-		BOOL getIsDone() { return isDone; }
+		BOOL getIsDone() { return mIsDone; }
 		PresentationEndedSignal& getPresentationEndedSignal() { return mPresentationEndedSignal; }
 
 	protected:
@@ -159,35 +159,35 @@ class CPlayer : public IMFAsyncCallback
 		}
 
 	protected:
-		long m_nRefCount;	// Reference count.
+		long mRefCount;	// Reference count.
 
-		IMFSequencerSource* m_pSequencerSource;
-		IMFSourceResolver* m_pSourceResolver;
-		IMFMediaSource* m_pSource;
-		IMFVideoDisplayControl* m_pVideoDisplay;
-		MFSequencerElementId _previousTopoID;
-		HWND m_hwndVideo;	// Video window.
-		HWND m_hwndEvent;	// App window to receive events.
-		PlayerState m_state;	// Current state of the media session.
-		HANDLE m_hCloseEvent;	// Event to wait on while closing.
+		IMFSequencerSource* mSequencerSource;
+		IMFSourceResolver* mSourceResolver;
+		IMFMediaSource* mSource;
+		IMFVideoDisplayControl* mVideoDisplay;
+		MFSequencerElementId mPreviousTopoID;
+		HWND mHWNDVideo;	// Video window.
+		HWND mHWNDEvent;	// App window to receive events.
+		PlayerState mState;	// Current state of the media session.
+		HANDLE mCloseEvent;	// Event to wait on while closing.
 		PresentationEndedSignal mPresentationEndedSignal; // Signal when presentation ends
-		IMFAudioStreamVolume* m_pVolumeControl;
+		IMFAudioStreamVolume* mVolumeControl;
 
-		bool isDone;
-		bool _isLooping;
-		int	numFrames;
+		bool mIsDone;
+		bool mIsLooping;
+		int mNumFrames;
 
 	public:
-		EVRCustomPresenter*	m_pEVRPresenter; // Custom EVR for texture sharing
-		IMFMediaSession* m_pSession;
+		EVRCustomPresenter*	mEVRPresenter; // Custom EVR for texture sharing
+		IMFMediaSession* mSession;
 
-		std::vector<EVRCustomPresenter*> v_EVRPresenters;  //if you want to load multiple sources in one go
-		std::vector<IMFMediaSource*> v_sources;        //for doing frame symc... this is experimental
+		std::vector<EVRCustomPresenter*> mEVRPresenters;  //if you want to load multiple sources in one go
+		std::vector<IMFMediaSource*> mSources;        //for doing frame symc... this is experimental
 
 	protected:
-		int _width;
-		int	_height;
-		float _currentVolume;
+		int mWidth;
+		int mHeight;
+		float mCurrentVolume;
 };
 
 #endif PLAYER_H

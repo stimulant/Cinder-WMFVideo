@@ -25,22 +25,28 @@
 class ciWMFVideoPlayer;
 class CPlayer;
 
+enum VideoFill {
+	Fill,	// fill rectangle (distort texture to fill)
+	AspectFit,	// fit rectangle and keep aspect ratio with white space
+	Overflow	// fill rectangle, keep aspect ratio and crop overflow
+};
+
 class ciWMFVideoPlayer
 {
 	private:
-		static int _instanceCount;
-		HWND _hwndPlayer;
-		BOOL bRepaintClient;
+		static int mInstanceCount;
+		HWND mHWNDPlayer;
 
-		int _width;
-		int	 _height;
+		int mWidth;
+		int mHeight;
 
-		bool _waitForLoadedToPlay;
-		bool _isLooping;
+		bool mWaitForLoadedToPlay;
+		bool mIsLooping;
+		VideoFill mVideoFill;
 
-		bool _sharedTextureCreated;
+		bool mSharedTextureCreated;
 
-		ci::gl::TextureRef	_tex;
+		ci::gl::TextureRef mTex;
 
 		cinder::signals::Connection mWinCloseConnection;
 
@@ -61,8 +67,8 @@ class ciWMFVideoPlayer
 				CPlayer* mPlayer;
 		};
 
-		CPlayer* _player;
-		int _id;
+		CPlayer* mPlayer;
+		int mId;
 
 		ciWMFVideoPlayer();
 		~ciWMFVideoPlayer();
@@ -91,12 +97,12 @@ class ciWMFVideoPlayer
 		float getSpeed();
 
 		void setLoop( bool isLooping );
-		bool isLooping() const { return _isLooping; }
+		bool isLooping() const { return mIsLooping; }
 
 		void draw( int x, int y , int w, int h );
 		void draw( int x, int y ) { draw( x, y, getWidth(), getHeight() ); }
 
-		HWND getHandle() const { return _hwndPlayer; }
+		HWND getHandle() const { return mHWNDPlayer; }
 		LRESULT WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
 		PresentationEndedSignal& getPresentationEndedSignal();
