@@ -44,6 +44,7 @@ int  ciWMFVideoPlayer::mInstanceCount = 0;
 
 ciWMFVideoPlayer::ciWMFVideoPlayer()
 	: mPlayer( NULL )
+	, mVideoFill( VideoFill::FILL )
 {
 	if( mInstanceCount == 0 )  {
 		HRESULT hr = MFStartup( MF_VERSION );
@@ -165,7 +166,22 @@ void ciWMFVideoPlayer::draw( int x, int y, int w, int h )
 	mPlayer->mEVRPresenter->lockSharedTexture();
 
 	if( mTex ) {
-		gl::draw( mTex, Rectf( x, y, x + w, y + h ) );
+		Rectf destRect = Rectf( x, y, x + w, y + h );
+
+		switch( mVideoFill ) {
+			case VideoFill::FILL:
+				gl::draw( mTex, destRect );
+				break;
+
+			case VideoFill::ASPECT_FIT:
+				gl::draw( mTex, Rectf( mTex->getBounds() ).getCenteredFit( destRect, true ) ) ;
+				break;
+
+			case VideoFill::CROP_FIT:
+				gl::draw( mTex, Area( destRect.getCenteredFit( mTex->getBounds(), true ) ), destRect );
+				break;
+		}
+
 	}
 
 	mPlayer->mEVRPresenter->unlockSharedTexture();

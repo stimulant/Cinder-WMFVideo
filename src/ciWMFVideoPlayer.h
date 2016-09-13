@@ -26,9 +26,9 @@ class ciWMFVideoPlayer;
 class CPlayer;
 
 enum VideoFill {
-	Fill,	// fill rectangle (distort texture to fill)
-	AspectFit,	// fit rectangle and keep aspect ratio with white space
-	Overflow	// fill rectangle, keep aspect ratio and crop overflow
+	FILL,	// fill rectangle (distort texture to fill)
+	ASPECT_FIT,	// fit rectangle and keep aspect ratio with blank space
+	CROP_FIT	// fit rectangle, keep aspect ratio and crop overflow
 };
 
 class ciWMFVideoPlayer
@@ -98,6 +98,8 @@ class ciWMFVideoPlayer
 
 		void setLoop( bool isLooping );
 		bool isLooping() const { return mIsLooping; }
+
+		void setVideoFill( VideoFill videoFill ) { mVideoFill = videoFill; }
 
 		void draw( int x, int y , int w, int h );
 		void draw( int x, int y ) { draw( x, y, getWidth(), getHeight() ); }
