@@ -55,9 +55,18 @@ ciWMFVideoPlayer::ciWMFVideoPlayer() : _player(NULL)
 	
 	_waitForLoadedToPlay = false;
 	_sharedTextureCreated = false;	
+
+	// Make sure the video is closed before the rendering context is lost.
+	auto window = app::App::get()->getWindow();
+
+	if (window) {
+		mWinCloseConnection = window->getSignalClose().connect(std::bind(&ciWMFVideoPlayer::close, this));
+	}
 }
 	 
 ciWMFVideoPlayer::~ciWMFVideoPlayer() {
+	mWinCloseConnection.disconnect();
+
 	if (_player)
     {
 		_player->Shutdown();

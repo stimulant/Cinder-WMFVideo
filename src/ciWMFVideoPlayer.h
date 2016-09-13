@@ -20,6 +20,7 @@
 #include "ciWMFVideoPlayerUtils.h"
 #include "presenter/EVRPresenter.h"
 #include "cinder/gl/gl.h"
+#include "cinder/Signals.h"
 
 class ciWMFVideoPlayer;
 class CPlayer;
@@ -40,7 +41,9 @@ private:
 	bool				_sharedTextureCreated;
 		
 	ci::gl::TextureRef	_tex;
-	
+
+	cinder::signals::Connection mWinCloseConnection;
+
 	BOOL	InitInstance();
 	void	OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
