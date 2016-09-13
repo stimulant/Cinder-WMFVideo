@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "presenter/EVRPresenter.h"
+#include "cinder/Signals.h"
 
 template <class T> void SafeRelease( T** ppT )
 {
@@ -58,6 +59,8 @@ enum PlayerState {
 };
 
 const std::string& GetPlayerStateString( const PlayerState p );
+
+typedef cinder::signals::Signal<void()> PresentationEndedSignal;
 
 class CPlayer : public IMFAsyncCallback
 {
@@ -127,6 +130,7 @@ class CPlayer : public IMFAsyncCallback
 		// void previousFrame();
 
 		BOOL getIsDone() { return isDone; }
+		PresentationEndedSignal& getPresentationEndedSignal() { return mPresentationEndedSignal; }
 
 	protected:
 
@@ -166,6 +170,7 @@ class CPlayer : public IMFAsyncCallback
 		HWND m_hwndEvent;	// App window to receive events.
 		PlayerState m_state;	// Current state of the media session.
 		HANDLE m_hCloseEvent;	// Event to wait on while closing.
+		PresentationEndedSignal mPresentationEndedSignal; // Signal when presentation ends
 		IMFAudioStreamVolume* m_pVolumeControl;
 
 		bool isDone;

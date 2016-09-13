@@ -50,8 +50,12 @@ void SimplePlaybackApp::draw()
 
 void SimplePlaybackApp::setup()
 {
-	mVideo1.loadMovie( "1.mp4", "Headphones (High Definition Audio Device)" );
+	std::string videoPath = getAssetPath( "1.wmv" ).string();
+	mVideo1.loadMovie( videoPath, "Headphones (High Definition Audio Device)" );
 	mVideo1.play();
+	mVideo1.getPresentationEndedSignal().connect( []() {
+		ci::app::console() << "Video finished playing!" << std::endl;
+	} );
 
 	mParams = params::InterfaceGl::create( "Params", ivec2( 210, 210 ) );
 	mParams->addParam<float>( "FPS", &mFps, true );

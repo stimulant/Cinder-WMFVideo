@@ -99,5 +99,7 @@ class ciWMFVideoPlayer
 		HWND getHandle() const { return _hwndPlayer; }
 		LRESULT WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
+		PresentationEndedSignal& getPresentationEndedSignal();
+
 		static void forceExit();
 };

@@ -294,6 +294,13 @@ bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
 	}
 }
 
+PresentationEndedSignal& ciWMFVideoPlayer::getPresentationEndedSignal()
+{
+	if (_player) {
+		return _player->getPresentationEndedSignal();
+	}
+}
+
 float ciWMFVideoPlayer::getHeight() { return _player->getHeight(); }
 float ciWMFVideoPlayer::getWidth() { return _player->getWidth(); }
 void  ciWMFVideoPlayer::setLoop( bool isLooping ) { _isLooping = isLooping; _player->setLooping( isLooping ); }
