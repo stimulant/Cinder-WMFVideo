@@ -388,10 +388,6 @@ HRESULT CPlayer::EndOpenURL( const WCHAR* audioDeviceId )
 	mState = OPEN_PENDING;
 	mCurrentVolume = 1.0f;
 
-	// If SetTopology succeeds, the media session will queue an
-	// MESessionTopologySet event.
-	mIsDone = false;
-
 done:
 
 	if( FAILED( hr ) ) {
@@ -450,10 +446,6 @@ HRESULT CPlayer::setPosition( float pos )
 		return S_FALSE;
 	}
 
-	/*	bool wasPlaying = (mState == Started);
-		mSession->Pause();
-		mState = Paused;*/
-
 	//Create variant for seeking information
 	PROPVARIANT varStart;
 	PlayerState curState = mState;
@@ -474,9 +466,6 @@ HRESULT CPlayer::setPosition( float pos )
 		CI_LOG_E( "Error while seeking" );
 		return S_FALSE;
 	}
-
-	/*if (!wasPlaying) mSession->Pause();
-	mState = Paused;*/
 
 	PropVariantClear( &varStart );
 	return S_OK;

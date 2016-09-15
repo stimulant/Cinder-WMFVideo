@@ -5,11 +5,28 @@ Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer 
 
 # Revision History
 
+## v.Next
+- Potion [forked](https://github.com/Potion/Cinder-WMFVideo) 266Hz's version
+- Added features / utility functions:
+	- Signal when video finishes playing
+	- Video Fill types: FILL, ASPECT_FILL and CROP_FIT
+	- StepForward 1 frame
+- Some bug fixes:
+	- Prevent crash when window is closed
+	- Video orientation (top-down)
+	- Video looping issues
+- Some cleanup
+
+## v.3.2
+- 266Hz [forked](https://github.com/2666hz/Cinder-WMFVideo) Gazoo101's version
+- Better messaging when URL fails to open
+- Some cleanup
+
 ## v.3.1
-- I forked djmike's most recent version
+- Gazoo101 [forked](https://github.com/Gazoo101/Cinder-WMFVideo) djmike's most recent version
 - Attempt to merge the fork with [DomAmato's update](https://github.com/DomAmato/ofxWMFVideoPlayer) to the original ofxWMFVideoPlayer
--- Variable rate video playback
--- Asynchronous video loading
+	- Variable rate video playback
+	- Asynchronous video loading
 - Added guards to keep IMFTrackedSample from being re-defined
 - Converted some printed error messages to Cinders new error log system
 

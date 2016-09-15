@@ -129,7 +129,6 @@ class CPlayer : public IMFAsyncCallback
 		// void nextFrame();
 		// void previousFrame();
 
-		BOOL getIsDone() { return mIsDone; }
 		PresentationEndedSignal& getPresentationEndedSignal() { return mPresentationEndedSignal; }
 
 	protected:
@@ -173,7 +172,6 @@ class CPlayer : public IMFAsyncCallback
 		PresentationEndedSignal mPresentationEndedSignal; // Signal when presentation ends
 		IMFAudioStreamVolume* mVolumeControl;
 
-		bool mIsDone;
 		bool mIsLooping;
 		int mNumFrames;
 
