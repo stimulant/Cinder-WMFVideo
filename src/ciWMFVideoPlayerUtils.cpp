@@ -752,9 +752,6 @@ HRESULT CPlayer::OnTopologyStatus( IMFMediaEvent* pEvent )
 //  Handler for MEEndOfPresentation event.
 HRESULT CPlayer::OnPresentationEnded( IMFMediaEvent* pEvent )
 {
-	// emit presentation ended signal
-	mPresentationEndedSignal.emit();
-
 	HRESULT hr = S_OK;
 
 	// New
@@ -791,6 +788,9 @@ HRESULT CPlayer::OnPresentationEnded( IMFMediaEvent* pEvent )
 		mState = STOPPED;
 		mIsDone = true;
 	}
+
+	// emit presentation ended signal
+	mPresentationEndedSignal.emit();
 
 	// Old
 
