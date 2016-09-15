@@ -754,70 +754,19 @@ HRESULT CPlayer::OnPresentationEnded( IMFMediaEvent* pEvent )
 {
 	HRESULT hr = S_OK;
 
-	// New
-
 	if( mIsLooping ) {
-
-		mState = STARTED;
-
-		//Create variant for seeking information
-		PROPVARIANT varStart;
-		PropVariantInit( &varStart );
-
-		varStart.vt = VT_I8;
-		float rate = GetPlaybackRate();
-
-		if( rate > 0 ) {
-			varStart.hVal.QuadPart = 0;    //seeking to the beginning
-		}
-
-		//else
-		//	varStart.hVal.QuadPart = getDuration()*.95 * 10000000.0; //seeking to the end
-
-		hr = mSession->Start( &GUID_NULL, &varStart );
-
-		if FAILED( hr ) {
-			CI_LOG_E( "Error while looping" );
-			//ofLogError( "ofxWMFVideoPlayerUtils", "Error while looping" );
-		}
-
-		PropVariantClear( &varStart );
+		hr = Stop();
+		hr = Play();
 	}
 	else {
-		// The session puts itself into the stopped state automatically.
-		mState = STOPPED;
-		mIsDone = true;
+		// pause
+		hr = Pause();
 	}
 
 	// emit presentation ended signal
 	mPresentationEndedSignal.emit();
 
-	// Old
-
-	//mSession->Pause();
-	//mState = Paused;
-
-	////Create variant for seeking information
-	//PROPVARIANT varStart;
-	//PropVariantInit(&varStart);
-	//varStart.vt = VT_I8;
-	//varStart.hVal.QuadPart = 0; //i.e. seeking to the beginning
-	//
-	////HRESULT hr = S_OK;
-	////hr = mSession->Start(&GUID_NULL,&varStart);
-
-	////if FAILED(hr)
-	//{
-	//	//ofLogError("ofxWMFVideoPlayerUtils", "Error while looping");
-	//}
-	//if (!mIsLooping) mSession->Pause();
-	//else mState = Started;
-	//
-	//PropVariantClear(&varStart);
-	//
-	//   // The session puts itself into the stopped state automatically.
-	//// else mState = Stopped;
-	return S_OK;
+	return hr;
 }
 
 //  Handler for MENewPresentation event.
@@ -949,7 +898,6 @@ HRESULT CPlayer::StartPlayback()
 	}
 
 	PropVariantClear( &varStart );
-	mIsDone = false;
 
 	return hr;
 }
