@@ -243,6 +243,11 @@ float ciWMFVideoPlayer::getPosition()
 	return mPlayer->getPosition();
 }
 
+float ciWMFVideoPlayer::getFrameRate()
+{
+	return mPlayer->getFrameRate();
+}
+
 float ciWMFVideoPlayer::getDuration()
 {
 	return mPlayer->getDuration();
