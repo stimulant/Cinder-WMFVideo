@@ -258,6 +258,22 @@ void ciWMFVideoPlayer::setPosition( float pos )
 	mPlayer->setPosition( pos );
 }
 
+void ciWMFVideoPlayer::stepForward()
+{
+	mPlayer->Pause();
+	float fps = mPlayer->getFrameRate();
+	float step = 1 / fps;
+	float currentVidPos = mPlayer->getPosition();
+	float targetVidPos = currentVidPos + step;
+
+	if  (mPlayer->GetState() == PAUSED) {
+		play();
+	}
+
+	mPlayer->setPosition(mPlayer->getPosition() + step);
+	mPlayer->Pause();
+
+}
 float ciWMFVideoPlayer::getSpeed()
 {
 	return mPlayer->GetPlaybackRate();
