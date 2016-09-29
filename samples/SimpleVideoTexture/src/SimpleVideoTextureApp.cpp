@@ -225,6 +225,7 @@ void SimpleVideoTextureApp::setup()
 			mVideoDuration = mVideo.getDuration();
 			mVideoPos = mVideo.getPosition();
 			mVideo.play();
+			mVideo.setLoop(true);
 		}
 	};
 

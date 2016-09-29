@@ -50,9 +50,10 @@ void SimplePlaybackApp::draw()
 
 void SimplePlaybackApp::setup()
 {
-	std::string videoPath = getAssetPath( "1.wmv" ).string();
+	std::string videoPath = getAssetPath( "demo.mp4" ).string();
 	mVideo1.loadMovie( videoPath, "Headphones (High Definition Audio Device)" );
 	mVideo1.play();
+	mVideo1.setLoop(true);
 	mVideo1.getPresentationEndedSignal().connect( []() {
 		ci::app::console() << "Video finished playing!" << std::endl;
 	} );

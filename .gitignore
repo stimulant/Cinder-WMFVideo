@@ -1,5 +1,7 @@
-samples/SimplePlayback/vc2012/Debug/
-samples/SimplePlayback/assets/2.mp4
+*/Debug/
+*/Release/
+*.mp4
+*.wmv
 
 # User-specific files
 *.suo
