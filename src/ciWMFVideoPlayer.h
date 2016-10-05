@@ -43,6 +43,7 @@ class ciWMFVideoPlayer
 		bool mWaitForLoadedToPlay;
 		bool mIsLooping;
 		VideoFill mVideoFill;
+		bool mIsSharedTextureLocked = false;
 
 		bool mSharedTextureCreated;
 
@@ -94,6 +95,10 @@ class ciWMFVideoPlayer
 		bool isPlaying();
 		bool isStopped();
 		bool isPaused();
+
+		void bindTexture(uint8_t texture_unit);
+		void unbindTexture();
+		bool isTexturedLocked()const { return mIsSharedTextureLocked; }
 
 		bool setSpeed( float speed, bool useThinning = false ); //thinning drops delta frames for faster playback though appears to be choppy, default is false
 		float getSpeed();

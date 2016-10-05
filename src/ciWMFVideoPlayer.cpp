@@ -31,6 +31,21 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
 	mPlayer->mEVRPresenter->unlockSharedTexture();
 }
 
+
+void ciWMFVideoPlayer::bindTexture(uint8_t texture_unit)
+{
+	mPlayer->mEVRPresenter->lockSharedTexture();
+	mTex->bind(texture_unit);
+	mIsSharedTextureLocked = true;
+}
+
+void ciWMFVideoPlayer::unbindTexture()
+{
+	mIsSharedTextureLocked = false;
+	mTex->unbind();
+	mPlayer->mEVRPresenter->unlockSharedTexture();
+}
+
 ciWMFVideoPlayer* findPlayers( HWND hwnd )
 {
 	for each( PlayerItem e in g_WMFVideoPlayers ) {
