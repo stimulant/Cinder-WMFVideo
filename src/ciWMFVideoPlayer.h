@@ -84,9 +84,11 @@ class ciWMFVideoPlayer
 		float getPosition();
 		float getDuration();
 		float getFrameRate();
+		float getVolume();
 
 		void setPosition( float pos );
 		void stepForward();
+		void setVolume( float vol );
 
 		float getHeight();
 		float getWidth();
