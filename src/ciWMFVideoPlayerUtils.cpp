@@ -1031,6 +1031,11 @@ HRESULT CreateMediaSinkActivate(
 
 						hr = PropVariantToString( varName, szName, ARRAYSIZE( szName ) );
 
+						// list out audio devices
+						wstring ws( szName );
+						string str( ws.begin(), ws.end() );
+						ci::app::console() << str << std::endl;
+
 						if( SUCCEEDED( hr ) || hr == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 							if( wcscmp( szName, audioDeviceId ) == 0 ) {
 								hr = pDevices->Item( i, &pDevice );
