@@ -23,6 +23,7 @@
 #include "atlcomcli.h"
 
 #include "cinder/Log.h"
+#include "cinder/app/App.h"
 
 using namespace std;
 
