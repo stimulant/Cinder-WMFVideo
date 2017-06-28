@@ -18,7 +18,7 @@
 //#include "ofMain.h"
 #include <new>
 #include <windows.h>
-#include <shobjidl.h> 
+#include <shobjidl.h>
 #include <shlwapi.h>
 #include <assert.h>
 #include <tchar.h>
@@ -32,123 +32,160 @@
 #include <vector>
 
 #include "presenter/EVRPresenter.h"
+#include "cinder/Signals.h"
 
-template <class T> void SafeRelease(T **ppT)
+template <class T> void SafeRelease( T** ppT )
 {
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
+	if( *ppT ) {
+		( *ppT )->Release();
+		*ppT = NULL;
+	}
 }
 
-const UINT WM_APP_PLAYER_EVENT = WM_APP + 1;   
+const UINT WM_APP_PLAYER_EVENT = WM_APP + 1;
 
-    // WPARAM = IMFMediaEvent*, WPARAM = MediaEventType
+// WPARAM = IMFMediaEvent*, WPARAM = MediaEventType
 
-enum PlayerState
-{
-    Closed = 0,     // No session.
-    Ready,          // Session was created, ready to open a file. 
-    OpenPending,    // Session is opening a file.
-    Started,        // Session is playing a file.
-    Paused,         // Session is paused.
-    Stopped,        // Session is stopped (ready to play). 
-    Closing         // Application has closed the session, but is waiting for MESessionClosed.
+enum PlayerState {
+	CLOSED = 0,			// No session.
+	READY,				// Session was created, ready to open a file.
+	OPEN_ASYNC_PENDING,	// Session is creating URL resource
+	OPEN_ASYNC_COMPLETE,	// Session finished opening URL
+	OPEN_PENDING,		// Session is opening a file.
+	STARTED,			// Session is playing a file.
+	PAUSED,				// Session is paused.
+	STOPPED,			// Session is stopped (ready to play).
+	CLOSING				// Application has closed the session, but is waiting for MESessionClosed.
 };
+
+const std::string& GetPlayerStateString( const PlayerState p );
+
+typedef cinder::signals::Signal<void()> PresentationEndedSignal;
 
 class CPlayer : public IMFAsyncCallback
 {
-public:
-    static HRESULT CreateInstance(HWND hVideo, HWND hEvent, CPlayer **ppPlayer);
+	public:
+		static HRESULT CreateInstance( HWND hVideo, HWND hEvent, CPlayer** ppPlayer );
 
-    // IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
+		// IUnknown methods
+		STDMETHODIMP QueryInterface( REFIID iid, void** ppv );
+		STDMETHODIMP_( ULONG ) AddRef();
+		STDMETHODIMP_( ULONG ) Release();
 
-    // IMFAsyncCallback methods
-    STDMETHODIMP  GetParameters(DWORD*, DWORD*)
-    {
-        // Implementation of this method is optional.
-        return E_NOTIMPL;
-    }
-    STDMETHODIMP  Invoke(IMFAsyncResult* pAsyncResult);
+		// IMFAsyncCallback methods
+		STDMETHODIMP GetParameters( DWORD*, DWORD* )
+		{
+			// Implementation of this method is optional.
+			return E_NOTIMPL;
+		}
+		STDMETHODIMP Invoke( IMFAsyncResult* pAsyncResult );
 
-    // Playback
-    HRESULT       OpenURL(const WCHAR *sURL, const WCHAR *audioDeviceId = 0);
+		// Playback
+		HRESULT OpenURL( const WCHAR* sURL, const WCHAR* audioDeviceId = 0 );
 
-	//Open multiple url in a same topology... Play with that of you want to do some video syncing
-	HRESULT       OpenMultipleURL(std::vector<const WCHAR *> &sURL);
-    HRESULT       Play();
-    HRESULT       Pause();
-    HRESULT       Stop();
-    HRESULT       Shutdown();
-    HRESULT       HandleEvent(UINT_PTR pUnkPtr);
-    PlayerState   GetState() const { return m_state; }
-    BOOL          HasVideo() const { return (m_pVideoDisplay != NULL);  }
+		HRESULT	OpenURLAsync( const WCHAR* sURL );
+		HRESULT EndOpenURL( const WCHAR* audioDeviceId = 0 );
 
-	float getDuration();
-	float getPosition();
-	float getWidth() { return _width; }
-	float getHeight() { 
-		return _height;
-	}
+		//Open multiple url in a same topology... Play with that of you want to do some video syncing
+		HRESULT OpenMultipleURL( std::vector<const WCHAR*>& sURL );
+		HRESULT Play();
+		HRESULT Pause();
+		HRESULT Stop();
+		HRESULT Shutdown();
+		HRESULT HandleEvent( UINT_PTR pUnkPtr );
+		HRESULT GetBufferProgress( DWORD* pProgress );
+		PlayerState GetState() const { return mState; }
+		BOOL HasVideo() const { return ( mVideoDisplay != NULL );  }
 
-	HRESULT setPosition(float pos);
+		BOOL canRewind()
+		{
+			DWORD m_caps;
+			mSession->GetSessionCapabilities( &m_caps );
+			return ( ( m_caps & MFSESSIONCAP_RATE_REVERSE ) == MFSESSIONCAP_RATE_REVERSE );
+		}
 
-	bool _isLooping;
-	bool isLooping() { return _isLooping; }
-	void setLooping(bool isLooping) { _isLooping = isLooping; }
+		float getDuration();
+		float getPosition();
 
-protected:
-    
-    // Constructor is private. Use static CreateInstance method to instantiate.
-    CPlayer(HWND hVideo, HWND hEvent);
+		HRESULT SetPlaybackRate( BOOL bThin, float rateRequested );
+		float GetPlaybackRate();
 
-    // Destructor is private. Caller should call Release.
-    virtual ~CPlayer(); 
+		float getWidth() { return mWidth; }
+		float getHeight() { return mHeight; }
 
-    HRESULT Initialize();
-    HRESULT CreateSession();
-    HRESULT CloseSession();
-    HRESULT StartPlayback();
+		HRESULT setPosition( float pos );
 
-	HRESULT SetMediaInfo( IMFPresentationDescriptor *pPD );
+		bool isLooping() { return mIsLooping; }
+		void setLooping( bool isLooping ) { mIsLooping = isLooping; }
 
-    // Media event handlers
-    virtual HRESULT OnTopologyStatus(IMFMediaEvent *pEvent);
-    virtual HRESULT OnPresentationEnded(IMFMediaEvent *pEvent);
-    virtual HRESULT OnNewPresentation(IMFMediaEvent *pEvent);
+		HRESULT setVolume( float vol );
+		float getVolume() { return mCurrentVolume; }
 
-    // Override to handle additional session events.
-    virtual HRESULT OnSessionEvent(IMFMediaEvent*, MediaEventType) 
-    { 
-        return S_OK; 
-    }
+		float getFrameRate();
+		int getCurrentFrame();
+		int getTotalNumFrames() { return mNumFrames; }
 
-protected:
-    long                    m_nRefCount;        // Reference count.
+		void firstFrame() { setPosition( 0 ); }
+		// void nextFrame();
+		// void previousFrame();
 
-    IMFSequencerSource		*m_pSequencerSource;
-    IMFMediaSource          *m_pSource;
-    IMFVideoDisplayControl  *m_pVideoDisplay;
-	MFSequencerElementId	_previousTopoID;
-    HWND                    m_hwndVideo;        // Video window.
-    HWND                    m_hwndEvent;        // App window to receive events.
-    PlayerState             m_state;            // Current state of the media session.
-    HANDLE                  m_hCloseEvent;      // Event to wait on while closing.
+		PresentationEndedSignal& getPresentationEndedSignal() { return mPresentationEndedSignal; }
 
-public:
-	EVRCustomPresenter		*m_pEVRPresenter; // Custom EVR for texture sharing
-	IMFMediaSession         *m_pSession;
-	
-	std::vector<EVRCustomPresenter*> v_EVRPresenters;  //if you want to load multiple sources in one go
-	std::vector<IMFMediaSource*>     v_sources;        //for doing frame symc... this is experimental
+	protected:
 
-protected:
-	int _width;
-	int _height;
+		// Constructor is private. Use static CreateInstance method to instantiate.
+		CPlayer( HWND hVideo, HWND hEvent );
+
+		// Destructor is private. Caller should call Release.
+		virtual ~CPlayer();
+
+		HRESULT Initialize();
+		HRESULT CreateSession();
+		HRESULT CloseSession();
+		HRESULT StartPlayback();
+
+		HRESULT SetMediaInfo( IMFPresentationDescriptor* pPD );
+
+		// Media event handlers
+		virtual HRESULT OnTopologyStatus( IMFMediaEvent* pEvent );
+		virtual HRESULT OnPresentationEnded( IMFMediaEvent* pEvent );
+		virtual HRESULT OnNewPresentation( IMFMediaEvent* pEvent );
+
+		// Override to handle additional session events.
+		virtual HRESULT OnSessionEvent( IMFMediaEvent*, MediaEventType )
+		{
+			return S_OK;
+		}
+
+	protected:
+		long mRefCount;	// Reference count.
+
+		IMFSequencerSource* mSequencerSource;
+		IMFSourceResolver* mSourceResolver;
+		IMFMediaSource* mSource;
+		IMFVideoDisplayControl* mVideoDisplay;
+		MFSequencerElementId mPreviousTopoID;
+		HWND mHWNDVideo;	// Video window.
+		HWND mHWNDEvent;	// App window to receive events.
+		PlayerState mState;	// Current state of the media session.
+		HANDLE mCloseEvent;	// Event to wait on while closing.
+		PresentationEndedSignal mPresentationEndedSignal; // Signal when presentation ends
+		IMFAudioStreamVolume* mVolumeControl;
+
+		bool mIsLooping;
+		int mNumFrames;
+
+	public:
+		EVRCustomPresenter*	mEVRPresenter; // Custom EVR for texture sharing
+		IMFMediaSession* mSession;
+
+		std::vector<EVRCustomPresenter*> mEVRPresenters;  //if you want to load multiple sources in one go
+		std::vector<IMFMediaSource*> mSources;        //for doing frame symc... this is experimental
+
+	protected:
+		int mWidth;
+		int mHeight;
+		float mCurrentVolume;
 };
 
 #endif PLAYER_H

@@ -19,76 +19,104 @@
 
 #include "ciWMFVideoPlayerUtils.h"
 #include "presenter/EVRPresenter.h"
-#include <boost/shared_ptr.hpp>
+#include "cinder/gl/gl.h"
+#include "cinder/Signals.h"
 
 class ciWMFVideoPlayer;
 class CPlayer;
 
-namespace cinder
+enum VideoFill {
+	FILL,	// fill rectangle (distort texture to fill)
+	ASPECT_FIT,	// fit rectangle and keep aspect ratio with blank space
+	CROP_FIT	// fit rectangle, keep aspect ratio and crop overflow
+};
+
+
+
+typedef std::shared_ptr<class ciWMFVideoPlayer> ciWMFVideoPlayerRef;
+
+class ciWMFVideoPlayer
 {
-	namespace gl
-	{
-		class Texture;
-		typedef std::shared_ptr<Texture> TextureRef;
-	}
-}
-
-class ciWMFVideoPlayer {
-
 	private:
-		static int  _instanceCount;
-		HWND		_hwndPlayer;
-		BOOL bRepaintClient;
-		
-		int _width;
-		int _height;
+		static int mInstanceCount;
+		HWND mHWNDPlayer;
 
-		bool _waitForLoadedToPlay;
-		bool _isLooping;
+		int mWidth;
+		int mHeight;
 
-		bool _sharedTextureCreated;
-		
-		cinder::gl::TextureRef _tex;
-	
+		bool mWaitForLoadedToPlay;
+		bool mIsLooping;
+		VideoFill mVideoFill;
+
+		bool mSharedTextureCreated;
+
+		ci::gl::TextureRef mTex;
+
+		cinder::signals::Connection mWinCloseConnection;
+
 		BOOL InitInstance();
-		void                OnPlayerEvent(HWND hwnd, WPARAM pUnkPtr);
+		void OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
 	public:
-	CPlayer*	_player;
+		friend struct ScopedVideoTextureBind;
+		struct ScopedVideoTextureBind : private ci::Noncopyable {
+			public:
+				ScopedVideoTextureBind(const ciWMFVideoPlayerRef video, uint8_t textureUnit);
+				ScopedVideoTextureBind( const ciWMFVideoPlayer& video, uint8_t textureUnit );
+				~ScopedVideoTextureBind();
 
-	int _id;
-	
-	ciWMFVideoPlayer();
-	 ~ciWMFVideoPlayer();
+			private:
+				ci::gl::Context* mCtx;
+				GLenum mTarget;
+				uint8_t mTextureUnit;
+				CPlayer* mPlayer;
+		};
 
-	 bool				loadMovie(std::string name, std::string audioDevice="");
-	 void				close();
-	 void				update();
-	
-	 void				play();
-	 void				stop();		
-	 void				pause();
+		CPlayer* mPlayer;
+		int mId;
 
-	 float				getPosition();
-	 float				getDuration();
+		ciWMFVideoPlayer();
+		~ciWMFVideoPlayer();
 
-	 void				setPosition(float pos);
+		bool loadMovie( const ci::fs::path& filePath, const std::string& audioDevice = "" );
+		void close();
+		void update();
 
-	 float				getHeight();
-	 float				getWidth();
+		void play();
+		void stop();
+		void pause();
 
-	 bool				isPlaying(); 
-	 bool				isStopped();
-	 bool				isPaused();
+		float getPosition();
+		float getDuration();
+		float getFrameRate();
+		float getVolume();
 
-	 void				setLoop(bool isLooping);
-	 bool				isLooping() { return _isLooping; }
+		void setPosition( float pos );
+		void stepForward();
+		void setVolume( float vol );
 
-	void draw(int x, int y , int w, int h);
-	void draw(int x, int y) { draw(x,y,getWidth(),getHeight()); }
+		float getHeight();
+		float getWidth();
 
-	HWND getHandle() { return _hwndPlayer;}
-	LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+		bool isPlaying();
+		bool isStopped();
+		bool isPaused();
 
-	static void forceExit();
+		bool setSpeed( float speed, bool useThinning = false ); //thinning drops delta frames for faster playback though appears to be choppy, default is false
+		float getSpeed();
+
+		void setLoop( bool isLooping );
+		bool isLooping() const { return mIsLooping; }
+
+		void setVideoFill( VideoFill videoFill ) { mVideoFill = videoFill; }
+
+		void draw( int x, int y , int w, int h );
+		void draw( int x, int y ) { draw( x, y, getWidth(), getHeight() ); }
+
+		HWND getHandle() const { return mHWNDPlayer; }
+		LRESULT WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
+
+		PresentationEndedSignal& getPresentationEndedSignal();
+
+		static void forceExit();
 };

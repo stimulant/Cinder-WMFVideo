@@ -18,6 +18,8 @@
 
 #include "EVRPresenter.h"
 #include "cinder/gl/gl.h"
+#include "cinder/Log.h"
+#include "glload/wgl_all.h"
 
 HRESULT FindAdapter(IDirect3D9 *pD3D9, HMONITOR hMonitor, UINT *puAdapterID);
 
@@ -65,12 +67,14 @@ D3DPresentEngine::~D3DPresentEngine()
 	if (gl_handleD3D) {
 		releaseSharedTexture() ;
 
-		printf("WMFVideoPlayer : Killing present engine.....");
+		CI_LOG_I("Killing present engine.....");
 		if (wglDXCloseDeviceNV(gl_handleD3D)) 
 		{
-			printf("SUCCESS\n");
+			CI_LOG_I( "SUCCESS" );
 		}
-		else printf("FAILED closing handle\n");
+		else {
+			CI_LOG_I( "FAILED closing handle" );
+		}
 	}
     SAFE_RELEASE(m_pDevice);
     SAFE_RELEASE(m_pSurfaceRepaint);
@@ -91,7 +95,7 @@ bool D3DPresentEngine::createSharedTexture(int w, int h, int textureID)
 
 	if (!gl_handleD3D)
 	{
-		printf("ciWMFVideoplayer : openning the shared device failed\nCreate SharedTexture Failed");
+		CI_LOG_E( "Opening the shared device failed - Create SharedTexture Failed" );
 		return false;
 	}
 	gl_name=textureID;
@@ -100,13 +104,13 @@ bool D3DPresentEngine::createSharedTexture(int w, int h, int textureID)
 
 	if (FAILED(hr))
 	{
-		printf("ciWMFVideoplayer : Error creating D3DTexture\n");
+		CI_LOG_E( "Error creating D3DTexture" );
 		return false;
 	}
 
 	if (!sharedHandle)
 	{
-		printf("ciWMFVideoplayer : Error creating D3D sahred handle\n");
+		CI_LOG_E( "Error creating D3D shared handle" );
 		return false;
 	}
 	
@@ -121,7 +125,7 @@ bool D3DPresentEngine::createSharedTexture(int w, int h, int textureID)
 
 	if (!gl_handle) 
 	{
-		printf("ciWMFVideoplayer : openning the shared texture failed\nCreate SharedTexture Failed");
+		CI_LOG_E("Opening the shared texture failed - Create SharedTexture Failed");
 		return false;
 	}
 	return true;
@@ -131,7 +135,7 @@ void D3DPresentEngine::releaseSharedTexture()
 {
 	if (!gl_handleD3D) return;
 	wglDXUnlockObjectsNV(gl_handleD3D, 1, &gl_handle);
-	wglDXUnregisterObjectNV(gl_handleD3D,gl_handle);
+	//wglDXUnregisterObjectNV(gl_handleD3D,gl_handle);	// Apparently causes access violations?
 	//glDeleteTextures(1, &gl_name);
 	SAFE_RELEASE(d3d_shared_surface);
 	SAFE_RELEASE(d3d_shared_texture);
@@ -600,7 +604,8 @@ HRESULT D3DPresentEngine::CreateD3DDevice()
     }
     else
     {
-		printf("Software cap, no bueno\n");
+		CI_LOG_W("Software Cap, No bueno :P");
+		//printf("Software cap, no bueno\n");
         vp = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
     }
 
@@ -671,8 +676,6 @@ done:
     return hr;
 }
 
-
-
 //-----------------------------------------------------------------------------
 // PresentSwapChain
 //
@@ -688,30 +691,33 @@ done:
 
 HRESULT D3DPresentEngine::PresentSwapChain(IDirect3DSwapChain9* pSwapChain, IDirect3DSurface9* pSurface)
 {
-    HRESULT hr = S_OK;
-
+	//-----------------------------------------------------------------------------
+	// Copy latest D3D frame to our OpenGL/D3D shared surface...
 
 	//pSwapChain->GetFrontBufferData(d3d_shared_surface);
 	IDirect3DSurface9 *surface;
 	pSwapChain->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&surface);
     if (m_pDevice->StretchRect(surface,NULL,d3d_shared_surface,NULL,D3DTEXF_NONE) != D3D_OK)
 	{
-		printf("ciWMFVideoplayer: Error while copying texture to gl context \n");
+		CI_LOG_E("Error while copying texture to gl context");
+		//printf("ciWMFVideoplayer: Error while copying texture to gl context \n");
 	}
 	SAFE_RELEASE(surface);
 
-    if (m_hwnd == NULL)
+	//-----------------------------------------------------------------------------
+	// Original code from the WMF EVRpresenter sample code...
+
+	HRESULT hr = S_OK;
+	
+	if (m_hwnd == NULL)
     {
         return MF_E_INVALIDREQUEST;
     }
 	
     hr = pSwapChain->Present(NULL, &m_rcDestRect, m_hwnd, NULL, 0);
-
 	
-
     LOG_MSG_IF_FAILED(L"D3DPresentEngine::PresentSwapChain, IDirect3DSwapChain9::Present failed.", hr);
-
-
+	
     return hr;
 }
 
