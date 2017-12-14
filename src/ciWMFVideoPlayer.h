@@ -91,13 +91,15 @@ class ciWMFVideoPlayer
 
 		float getHeight();
 		float getWidth();
+		inline ci::vec2 getSize() { return ci::vec2(getWidth(), getHeight()); }
 
 		bool isPlaying();
 		bool isStopped();
 		bool isPaused();
 
-		void bindTexture(uint8_t texture_unit);
-		void unbindTexture();
+		void bind(uint8_t texture_unit);
+		void unbind();
+
 		bool isTexturedLocked()const { return mIsSharedTextureLocked; }
 
 		bool setSpeed( float speed, bool useThinning = false ); //thinning drops delta frames for faster playback though appears to be choppy, default is false

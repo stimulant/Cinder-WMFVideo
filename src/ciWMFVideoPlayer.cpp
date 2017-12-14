@@ -32,14 +32,14 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
 }
 
 
-void ciWMFVideoPlayer::bindTexture(uint8_t texture_unit)
+void ciWMFVideoPlayer::bind(uint8_t texture_unit)
 {
 	mPlayer->mEVRPresenter->lockSharedTexture();
 	mTex->bind(texture_unit);
 	mIsSharedTextureLocked = true;
 }
 
-void ciWMFVideoPlayer::unbindTexture()
+void ciWMFVideoPlayer::unbind()
 {
 	mIsSharedTextureLocked = false;
 	mTex->unbind();
@@ -226,12 +226,11 @@ void ciWMFVideoPlayer::update()
 {
 	if( !mPlayer ) { return; }
 
-	if( ( mWaitForLoadedToPlay ) && mPlayer->GetState() == PAUSED ) {
+	if ( mWaitForLoadedToPlay && mPlayer->GetState() == PAUSED) {
 		mWaitForLoadedToPlay = false;
-		mPlayer->Play();
+		mPlayer->Play();	
 	}
 
-	return;
 }
 
 void ciWMFVideoPlayer::play()
@@ -250,6 +249,7 @@ void ciWMFVideoPlayer::stop()
 
 void ciWMFVideoPlayer::pause()
 {
+	if (mPlayer->GetState() == OPEN_PENDING) { mWaitForLoadedToPlay = false; }
 	mPlayer->Pause();
 }
 

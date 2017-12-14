@@ -1081,7 +1081,7 @@ HRESULT CreateMediaSinkActivate(
 		CHECK_HR( hr );
 
 		//ThrowIfFail( pVideoRenderer->InitializeRenderer( NULL, pVideoPresenter ) );
-		hr = pVideoRenderer->InitializeRenderer( NULL, pVideoPresenter ) ;
+		hr = pVideoRenderer->InitializeRenderer(NULL, pVideoPresenter);
 		CHECK_HR( hr );
 
 		*ppMediaSink = pSink;
