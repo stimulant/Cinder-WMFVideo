@@ -31,6 +31,10 @@ enum VideoFill {
 	CROP_FIT	// fit rectangle, keep aspect ratio and crop overflow
 };
 
+
+
+typedef std::shared_ptr<class ciWMFVideoPlayer> ciWMFVideoPlayerRef;
+
 class ciWMFVideoPlayer
 {
 	private:
@@ -58,6 +62,7 @@ class ciWMFVideoPlayer
 		friend struct ScopedVideoTextureBind;
 		struct ScopedVideoTextureBind : private ci::Noncopyable {
 			public:
+				ScopedVideoTextureBind(const ciWMFVideoPlayerRef video, uint8_t textureUnit);
 				ScopedVideoTextureBind( const ciWMFVideoPlayer& video, uint8_t textureUnit );
 				~ScopedVideoTextureBind();
 
@@ -85,9 +90,11 @@ class ciWMFVideoPlayer
 		float getPosition();
 		float getDuration();
 		float getFrameRate();
+		float getVolume();
 
 		void setPosition( float pos );
 		void stepForward();
+		void setVolume( float vol );
 
 		float getHeight();
 		float getWidth();
