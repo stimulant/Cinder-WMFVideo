@@ -332,14 +332,14 @@ bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
 	}
 	else {
 		//setting to a negative doesn't seem to work though no error is thrown...
-		/*float position = getPosition();
+		float position = getPosition();
 		if(isPlaying())
 		mPlayer->Stop();
 		hr = mPlayer->SetPlaybackRate(useThinning, speed);
 		if(resume){
-		mPlayer->Play();
-		mPlayer->setPosition(position);
-		}*/
+			mPlayer->setPosition(position);
+			mPlayer->Play();
+		}
 	}
 
 	if( hr == S_OK ) {

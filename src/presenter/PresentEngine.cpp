@@ -36,7 +36,8 @@ D3DPresentEngine::D3DPresentEngine(HRESULT& hr) :
     m_pSurfaceRepaint(NULL),
 	gl_handleD3D(NULL),
 	d3d_shared_texture(NULL),
-	d3d_shared_surface(NULL)
+	d3d_shared_surface(NULL),
+	gl_handle(NULL)
 {
     SetRectEmpty(&m_rcDestRect);
 
@@ -133,7 +134,7 @@ bool D3DPresentEngine::createSharedTexture(int w, int h, int textureID)
 
 void D3DPresentEngine::releaseSharedTexture()
 {
-	if (!gl_handleD3D) return;
+	if (!gl_handleD3D || !d3d_shared_surface || !d3d_shared_texture) return;
 	wglDXUnlockObjectsNV(gl_handleD3D, 1, &gl_handle);
 	//wglDXUnregisterObjectNV(gl_handleD3D,gl_handle);	// Apparently causes access violations?
 	//glDeleteTextures(1, &gl_name);
