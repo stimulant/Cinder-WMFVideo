@@ -118,9 +118,7 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 	//CI_LOG_I( "Videoplayer[" << mId << "] loading " << name );
 
 	HRESULT hr = S_OK;
-	string s = filePath.string();
-	std::wstring w( s.length(), L' ' );
-	std::copy( s.begin(), s.end(), w.begin() );
+	std::wstring w = filePath.wstring();
 
 	std::wstring a( audioDevice.length(), L' ' );
 	std::copy( audioDevice.begin(), audioDevice.end(), a.begin() );
