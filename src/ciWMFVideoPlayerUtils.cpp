@@ -1032,10 +1032,12 @@ HRESULT CreateMediaSinkActivate(
 
 						hr = PropVariantToString( varName, szName, ARRAYSIZE( szName ) );
 
+#if 0
 						// list out audio devices
 						wstring ws( szName );
 						string str( ws.begin(), ws.end() );
-						ci::app::console() << str << std::endl;
+						CI_LOG_I( str );
+#endif
 
 						if( SUCCEEDED( hr ) || hr == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 							if( wcscmp( szName, audioDeviceId ) == 0 ) {
