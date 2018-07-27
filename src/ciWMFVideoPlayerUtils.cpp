@@ -485,7 +485,7 @@ HRESULT CPlayer::setVolume( float vol )
 		mCurrentVolume = vol;
 
 		if( FAILED( hr ) ) {
-			CI_LOG_E( "Error while getting sound control interface" );
+			CI_LOG_W( "Error while getting sound control interface" );
 			//ofLogError( "ofxWMFVideoPlayer", "setVolume: Error while getting sound control interface" );
 			return E_FAIL;
 		}
