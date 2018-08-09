@@ -108,6 +108,8 @@ class ciWMFVideoPlayer
 		void setLoop( bool isLooping );
 		bool isLooping() const { return mIsLooping; }
 
+		bool hasTexture() const { return (mPlayer && mTex); }
+
 		void setVideoFill( VideoFill videoFill ) { mVideoFill = videoFill; }
 
 		void draw( int x, int y , int w, int h );
