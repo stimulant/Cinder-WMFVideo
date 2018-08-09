@@ -1,0 +1,139 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Blocks">
+      <UniqueIdentifier>{54c3c866-221b-4e90-8406-e1f30ba280d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blocks\WMFVideo">
+      <UniqueIdentifier>{4e840f76-4e78-4bf4-8115-122bac8cd184}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blocks\WMFVideo\src">
+      <UniqueIdentifier>{b61ad2af-9997-465f-a877-246465e87306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blocks\WMFVideo\src\presenter">
+      <UniqueIdentifier>{0094d25a-2acd-4e8a-b42d-4bfcb6b6fec6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blocks\WMFVideo\src\presenter\common">
+      <UniqueIdentifier>{238fb673-3d35-4907-9218-56b915ed38b3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\SimpleVideoTextureApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SimpleVideoTextureApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="..\include\Resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\..\src\ciWMFVideoPlayer.cpp">
+      <Filter>Blocks\WMFVideo\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ciWMFVideoPlayerUtils.cpp">
+      <Filter>Blocks\WMFVideo\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\presenter\PresentEngine.cpp">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\presenter\Presenter.cpp">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\presenter\PresenterHelpers.cpp">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\presenter\scheduler.cpp">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\Resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\ciWMFVideoPlayer.h">
+      <Filter>Blocks\WMFVideo\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\ciWMFVideoPlayerUtils.h">
+      <Filter>Blocks\WMFVideo\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\EVRPresenter.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\EVRPresenterUuid.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\PresentEngine.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\Presenter.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\PresenterHelpers.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\scheduler.h">
+      <Filter>Blocks\WMFVideo\src\presenter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\AsyncCB.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\BufferLock.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\ClassFactory.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\common.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\critsec.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\GrowArray.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\linklist.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\logging.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\logmediatype.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\mediatype.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\mfutils.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\PropVar.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\registry.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\TinyMap.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\presenter\common\trace.h">
+      <Filter>Blocks\WMFVideo\src\presenter\common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
