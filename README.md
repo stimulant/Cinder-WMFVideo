@@ -11,6 +11,7 @@ Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer 
 	- Signal when video finishes playing
 	- Video Fill types: FILL, ASPECT_FILL and CROP_FIT
 	- StepForward 1 frame
+	- Switch audio device automatically if not specified 
 - Some bug fixes:
 	- Prevent crash when window is closed
 	- Video orientation (top-down)
