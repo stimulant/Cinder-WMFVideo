@@ -1007,6 +1007,11 @@ HRESULT CreateMediaSinkActivate(
 			UINT pcDevices;
 			pDevices->GetCount( &pcDevices );
 
+			// Returns a pointer to an activation object, which can be used to create the SAR.
+			if ( SUCCEEDED( hr ) ) {
+				hr = MFCreateAudioRendererActivate( &pActivate );
+			}
+
 			for( UINT i = 0 ; i < pcDevices; i++ ) {
 				hr = pDevices->Item( i, &pDevice );
 
@@ -1046,6 +1051,16 @@ HRESULT CreateMediaSinkActivate(
 								if( SUCCEEDED( hr ) ) {
 									hr = pDevice->GetId( &wstrID );
 									PropVariantClear( &varName );
+
+									// Only set endpoint device if a matching name is found, if the Windows default playback device has changed, it won't switch.
+									// If name not specified / not mataching, WMF will auto switch endpoint devices during playback.
+									if ( SUCCEEDED( hr ) ) {
+										hr = pActivate->SetString(
+											MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
+											wstrID
+										);
+									}
+
 									break;
 								}
 							}
@@ -1055,16 +1070,6 @@ HRESULT CreateMediaSinkActivate(
 			}
 		}
 
-		if( SUCCEEDED( hr ) ) {
-			hr = MFCreateAudioRendererActivate( &pActivate );
-		}
-
-		if( SUCCEEDED( hr ) ) {
-			hr = pActivate->SetString(
-			         MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
-			         wstrID
-			     );
-		}
 
 		//SAFE_RELEASE(pActivate)
 
