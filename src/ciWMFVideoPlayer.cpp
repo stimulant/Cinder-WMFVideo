@@ -84,6 +84,13 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 	}
 
 	CI_LOG_I( "Player " << mId << " Terminated" );
+
+	auto hwnd = mHWNDPlayer;
+
+	g_WMFVideoPlayers.erase(std::remove_if(g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd](PlayerItem &p) {
+		return p.first == hwnd;
+	}), g_WMFVideoPlayers.end());
+
 	mInstanceCount--;
 
 	if( mInstanceCount == 0 ) {
