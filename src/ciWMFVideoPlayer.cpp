@@ -25,8 +25,8 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVid
 	mCtx->pushTextureBinding( mTarget, video.mTex->getId(), mTextureUnit );
 }
 
-ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind(const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit)
-	:ScopedVideoTextureBind(*video, textureUnit)
+ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit )
+	: ScopedVideoTextureBind( *video, textureUnit )
 {}
 
 ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
@@ -87,9 +87,9 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 
 	auto hwnd = mHWNDPlayer;
 
-	g_WMFVideoPlayers.erase(std::remove_if(g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd](PlayerItem &p) {
+	g_WMFVideoPlayers.erase( std::remove_if( g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd]( PlayerItem & p ) {
 		return p.first == hwnd;
-	}), g_WMFVideoPlayers.end());
+	} ), g_WMFVideoPlayers.end() );
 
 	mInstanceCount--;
 
@@ -237,6 +237,7 @@ void ciWMFVideoPlayer::play()
 	if( mPlayer->GetState()  == OPEN_PENDING ) { mWaitForLoadedToPlay = true; }
 
 	mPlayer->Play();
+	mPlayStartedSignal.emit();
 }
 
 void ciWMFVideoPlayer::stop()
