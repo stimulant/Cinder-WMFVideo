@@ -49,6 +49,7 @@ int  ciWMFVideoPlayer::mInstanceCount = 0;
 ciWMFVideoPlayer::ciWMFVideoPlayer()
 	: mPlayer( NULL )
 	, mVideoFill( VideoFill::FILL )
+	, mPlayPending( false )
 {
 	if( mInstanceCount == 0 )  {
 		HRESULT hr = MFStartup( MF_VERSION );
@@ -227,7 +228,10 @@ void ciWMFVideoPlayer::update()
 		mPlayer->Play();
 	}
 
-	return;
+	if( mPlayPending && mPlayer->GetState() == STARTED ) {
+		mPlayPending = false;
+		mPlayStartedSignal.emit();
+	}
 }
 
 void ciWMFVideoPlayer::play()
@@ -237,7 +241,7 @@ void ciWMFVideoPlayer::play()
 	if( mPlayer->GetState()  == OPEN_PENDING ) { mWaitForLoadedToPlay = true; }
 
 	mPlayer->Play();
-	mPlayStartedSignal.emit();
+	mPlayPending = true;
 }
 
 void ciWMFVideoPlayer::stop()

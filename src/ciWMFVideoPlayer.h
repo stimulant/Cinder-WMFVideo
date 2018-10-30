@@ -58,7 +58,7 @@ class ciWMFVideoPlayer
 		void OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
 		PlayStartedSignal       mPlayStartedSignal;
-
+		bool                    mPlayPending;
 
 	public:
 		friend struct ScopedVideoTextureBind;
