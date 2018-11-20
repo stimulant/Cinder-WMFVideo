@@ -59,6 +59,7 @@ class ciWMFVideoPlayer
 
 		PlayStartedSignal       mPlayStartedSignal;
 		bool                    mPlayPending;
+		bool                    mIsAudioOnly;
 
 	public:
 		friend struct ScopedVideoTextureBind;
@@ -81,7 +82,7 @@ class ciWMFVideoPlayer
 		ciWMFVideoPlayer();
 		~ciWMFVideoPlayer();
 
-		bool loadMovie( const ci::fs::path& filePath, const std::string& audioDevice = "" );
+		bool loadMovie( const ci::fs::path& filePath, const std::string& audioDevice = "", bool isAudioOnly = false );
 		void close();
 		void update();
 

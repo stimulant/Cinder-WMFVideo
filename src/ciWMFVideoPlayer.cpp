@@ -108,12 +108,14 @@ void ciWMFVideoPlayer::forceExit()
 	}
 }
 
-bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice )
+bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice, bool isAudioOnly )
 {
 	if( !mPlayer ) {
 		//ofLogError("ciWMFVideoPlayer") << "Player not created. Can't open the movie.";
 		return false;
 	}
+
+	mIsAudioOnly = isAudioOnly;
 
 	//DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
 	//if (fileAttr == INVALID_FILE_ATTRIBUTES)
@@ -137,22 +139,8 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 
 	//	CI_LOG_D(GetPlayerStateString(mPlayer->GetState()));
 
-	if( !mSharedTextureCreated ) {
-		mWidth = mPlayer->getWidth();
-		mHeight = mPlayer->getHeight();
-
-		gl::Texture::Format format;
-		format.setInternalFormat( GL_RGBA );
-		format.setTargetRect();
-		format.loadTopDown( true );
-		mTex = gl::Texture::create( mWidth, mHeight, format );
-		mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
-		mSharedTextureCreated = true;
-	}
-	else {
-		if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
-			mPlayer->mEVRPresenter->releaseSharedTexture();
-
+	if( !isAudioOnly ) {
+		if( !mSharedTextureCreated ) {
 			mWidth = mPlayer->getWidth();
 			mHeight = mPlayer->getHeight();
 
@@ -162,6 +150,22 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 			format.loadTopDown( true );
 			mTex = gl::Texture::create( mWidth, mHeight, format );
 			mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			mSharedTextureCreated = true;
+		}
+		else {
+			if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
+				mPlayer->mEVRPresenter->releaseSharedTexture();
+
+				mWidth = mPlayer->getWidth();
+				mHeight = mPlayer->getHeight();
+
+				gl::Texture::Format format;
+				format.setInternalFormat( GL_RGBA );
+				format.setTargetRect();
+				format.loadTopDown( true );
+				mTex = gl::Texture::create( mWidth, mHeight, format );
+				mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			}
 		}
 	}
 
@@ -172,6 +176,10 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 void ciWMFVideoPlayer::draw( int x, int y, int w, int h )
 {
 	if( !mPlayer ) {
+		return;
+	}
+
+	if( mIsAudioOnly ) {
 		return;
 	}
 
