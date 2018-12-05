@@ -382,6 +382,15 @@ float ciWMFVideoPlayer::getHeight() { return mPlayer->getHeight(); }
 float ciWMFVideoPlayer::getWidth() { return mPlayer->getWidth(); }
 void  ciWMFVideoPlayer::setLoop( bool isLooping ) { mIsLooping = isLooping; mPlayer->setLooping( isLooping ); }
 
+ci::vec2 ciWMFVideoPlayer::getTextureSize()
+{
+	if( mTex ) {
+		return ci::vec2( mTex->getWidth(), mTex->getHeight() );
+	}
+
+	return ci::vec2( 0 );
+}
+
 //-----------------------------------
 // Prvate Functions
 //-----------------------------------

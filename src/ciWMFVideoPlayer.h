@@ -113,6 +113,7 @@ class ciWMFVideoPlayer
 		bool isLooping() const { return mIsLooping; }
 
 		bool hasTexture() const { return ( mPlayer && mTex ); }
+		ci::vec2 getTextureSize();
 
 		void setVideoFill( VideoFill videoFill ) { mVideoFill = videoFill; }
 
