@@ -25,8 +25,8 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVid
 	mCtx->pushTextureBinding( mTarget, video.mTex->getId(), mTextureUnit );
 }
 
-ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind(const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit)
-	:ScopedVideoTextureBind(*video, textureUnit)
+ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit )
+	: ScopedVideoTextureBind( *video, textureUnit )
 {}
 
 ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
@@ -49,6 +49,7 @@ int  ciWMFVideoPlayer::mInstanceCount = 0;
 ciWMFVideoPlayer::ciWMFVideoPlayer()
 	: mPlayer( NULL )
 	, mVideoFill( VideoFill::FILL )
+	, mPlayPending( false )
 {
 	if( mInstanceCount == 0 )  {
 		HRESULT hr = MFStartup( MF_VERSION );
@@ -87,9 +88,9 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 
 	auto hwnd = mHWNDPlayer;
 
-	g_WMFVideoPlayers.erase(std::remove_if(g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd](PlayerItem &p) {
+	g_WMFVideoPlayers.erase( std::remove_if( g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd]( PlayerItem & p ) {
 		return p.first == hwnd;
-	}), g_WMFVideoPlayers.end());
+	} ), g_WMFVideoPlayers.end() );
 
 	mInstanceCount--;
 
@@ -107,12 +108,14 @@ void ciWMFVideoPlayer::forceExit()
 	}
 }
 
-bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice )
+bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice, bool isAudioOnly )
 {
 	if( !mPlayer ) {
 		//ofLogError("ciWMFVideoPlayer") << "Player not created. Can't open the movie.";
 		return false;
 	}
+
+	mIsAudioOnly = isAudioOnly;
 
 	//DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
 	//if (fileAttr == INVALID_FILE_ATTRIBUTES)
@@ -136,22 +139,8 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 
 	//	CI_LOG_D(GetPlayerStateString(mPlayer->GetState()));
 
-	if( !mSharedTextureCreated ) {
-		mWidth = mPlayer->getWidth();
-		mHeight = mPlayer->getHeight();
-
-		gl::Texture::Format format;
-		format.setInternalFormat( GL_RGBA );
-		format.setTargetRect();
-		format.loadTopDown( true );
-		mTex = gl::Texture::create( mWidth, mHeight, format );
-		mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
-		mSharedTextureCreated = true;
-	}
-	else {
-		if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
-			mPlayer->mEVRPresenter->releaseSharedTexture();
-
+	if( !isAudioOnly ) {
+		if( !mSharedTextureCreated ) {
 			mWidth = mPlayer->getWidth();
 			mHeight = mPlayer->getHeight();
 
@@ -161,6 +150,22 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 			format.loadTopDown( true );
 			mTex = gl::Texture::create( mWidth, mHeight, format );
 			mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			mSharedTextureCreated = true;
+		}
+		else {
+			if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
+				mPlayer->mEVRPresenter->releaseSharedTexture();
+
+				mWidth = mPlayer->getWidth();
+				mHeight = mPlayer->getHeight();
+
+				gl::Texture::Format format;
+				format.setInternalFormat( GL_RGBA );
+				format.setTargetRect();
+				format.loadTopDown( true );
+				mTex = gl::Texture::create( mWidth, mHeight, format );
+				mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			}
 		}
 	}
 
@@ -171,6 +176,10 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 void ciWMFVideoPlayer::draw( int x, int y, int w, int h )
 {
 	if( !mPlayer ) {
+		return;
+	}
+
+	if( mIsAudioOnly ) {
 		return;
 	}
 
@@ -227,7 +236,10 @@ void ciWMFVideoPlayer::update()
 		mPlayer->Play();
 	}
 
-	return;
+	if( mPlayPending && mPlayer->GetState() == STARTED ) {
+		mPlayPending = false;
+		mPlayStartedSignal.emit();
+	}
 }
 
 void ciWMFVideoPlayer::play()
@@ -237,6 +249,7 @@ void ciWMFVideoPlayer::play()
 	if( mPlayer->GetState()  == OPEN_PENDING ) { mWaitForLoadedToPlay = true; }
 
 	mPlayer->Play();
+	mPlayPending = true;
 }
 
 void ciWMFVideoPlayer::stop()
@@ -368,6 +381,15 @@ PresentationEndedSignal& ciWMFVideoPlayer::getPresentationEndedSignal()
 float ciWMFVideoPlayer::getHeight() { return mPlayer->getHeight(); }
 float ciWMFVideoPlayer::getWidth() { return mPlayer->getWidth(); }
 void  ciWMFVideoPlayer::setLoop( bool isLooping ) { mIsLooping = isLooping; mPlayer->setLooping( isLooping ); }
+
+ci::vec2 ciWMFVideoPlayer::getTextureSize()
+{
+	if( mTex ) {
+		return ci::vec2( mTex->getWidth(), mTex->getHeight() );
+	}
+
+	return ci::vec2( 0 );
+}
 
 //-----------------------------------
 // Prvate Functions
