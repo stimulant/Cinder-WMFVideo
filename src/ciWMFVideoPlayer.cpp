@@ -2,6 +2,7 @@
 #include "ciWMFVideoPlayer.h"
 
 #include "cinder/app/App.h"
+#include "cinder/msw/CinderMsw.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Log.h"
 
@@ -120,8 +121,7 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 	HRESULT hr = S_OK;
 	std::wstring w = filePath.wstring();
 
-	std::wstring a( audioDevice.length(), L' ' );
-	std::copy( audioDevice.begin(), audioDevice.end(), a.begin() );
+	std::wstring a = ci::msw::toWideString( audioDevice );
 
 	hr = mPlayer->OpenURL( w.c_str(), a.c_str() );
 
