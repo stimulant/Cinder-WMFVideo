@@ -32,7 +32,7 @@ enum VideoFill {
 };
 
 
-
+typedef cinder::signals::Signal<void()> PlayStartedSignal;
 typedef std::shared_ptr<class ciWMFVideoPlayer> ciWMFVideoPlayerRef;
 
 class ciWMFVideoPlayer
@@ -58,11 +58,15 @@ class ciWMFVideoPlayer
 		BOOL InitInstance();
 		void OnPlayerEvent( HWND hwnd, WPARAM pUnkPtr );
 
+		PlayStartedSignal       mPlayStartedSignal;
+		bool                    mPlayPending;
+		bool                    mIsAudioOnly;
+
 	public:
 		friend struct ScopedVideoTextureBind;
 		struct ScopedVideoTextureBind : private ci::Noncopyable {
 			public:
-				ScopedVideoTextureBind(const ciWMFVideoPlayerRef video, uint8_t textureUnit);
+				ScopedVideoTextureBind( const ciWMFVideoPlayerRef video, uint8_t textureUnit );
 				ScopedVideoTextureBind( const ciWMFVideoPlayer& video, uint8_t textureUnit );
 				~ScopedVideoTextureBind();
 
@@ -79,7 +83,7 @@ class ciWMFVideoPlayer
 		ciWMFVideoPlayer();
 		~ciWMFVideoPlayer();
 
-		bool loadMovie( const ci::fs::path& filePath, const std::string& audioDevice = "" );
+		bool loadMovie( const ci::fs::path& filePath, const std::string& audioDevice = "", bool isAudioOnly = false );
 		void close();
 		void update();
 
@@ -115,15 +119,20 @@ class ciWMFVideoPlayer
 		void setLoop( bool isLooping );
 		bool isLooping() const { return mIsLooping; }
 
+		bool hasTexture() const { return ( mPlayer && mTex ); }
+		ci::vec2 getTextureSize();
+
 		void setVideoFill( VideoFill videoFill ) { mVideoFill = videoFill; }
 
-		void draw( int x, int y , int w, int h );
+		void draw( int x, int y, int w, int h );
 		void draw( int x, int y ) { draw( x, y, getWidth(), getHeight() ); }
 
 		HWND getHandle() const { return mHWNDPlayer; }
 		LRESULT WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
 		PresentationEndedSignal& getPresentationEndedSignal();
+
+		PlayStartedSignal&      getPlayStartedSignal() { return mPlayStartedSignal; }
 
 		static void forceExit();
 };

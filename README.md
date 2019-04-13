@@ -5,6 +5,9 @@ Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer 
 
 # Revision History
 
+## 2019 April 12
+* Merged in changes from Potion's version
+
 ## 2016 Sept 29
 * Forked Potion's version of Cinder-WMFVideo.
 * Added 64-bit versions of the projects
