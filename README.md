@@ -45,9 +45,6 @@ Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer 
 - ofxWMFVideoPlayer release 0.9 by Philippe Laulheret for [Second Story](http://www.secondstory.com/)
 
 # Installation
-- You will need to modify your Cinder build slightly to upgrade to GLee 5.5 which supports the WGL_NV_DX_interop.
-    * Copy cinder-src\GLee.c to Cinder\src\cinder\gl\
-    * Copy cinder-src\GLee.h to Cinder\include\cinder\gl\
 - Make sure you have an up to date video driver.  WGL_NV_DX_interop behaves poorly with older drivers.
 - After copying/cloning this repo to your Cinder blocks folder, use Tinderbox to create a new project and select to use the Cinder-WMFVideo block as either reference or copy.
 
