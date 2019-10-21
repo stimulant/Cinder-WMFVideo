@@ -746,6 +746,7 @@ HRESULT CPlayer::OnPresentationEnded( IMFMediaEvent* pEvent )
 
 	if( mIsLooping ) {
 		hr = Stop();
+		setPosition( 0.0f );
 		hr = Play();
 	}
 	else {
@@ -1008,7 +1009,7 @@ HRESULT CreateMediaSinkActivate(
 			pDevices->GetCount( &pcDevices );
 
 			// Returns a pointer to an activation object, which can be used to create the SAR.
-			if ( SUCCEEDED( hr ) ) {
+			if( SUCCEEDED( hr ) ) {
 				hr = MFCreateAudioRendererActivate( &pActivate );
 			}
 
@@ -1054,11 +1055,11 @@ HRESULT CreateMediaSinkActivate(
 
 									// Only set endpoint device if a matching name is found, if the Windows default playback device has changed, it won't switch.
 									// If name not specified / not mataching, WMF will auto switch endpoint devices during playback.
-									if ( SUCCEEDED( hr ) ) {
+									if( SUCCEEDED( hr ) ) {
 										hr = pActivate->SetString(
-											MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
-											wstrID
-										);
+										         MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
+										         wstrID
+										     );
 									}
 
 									break;
