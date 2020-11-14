@@ -23,6 +23,8 @@
 #include <assert.h>
 #include <tchar.h>
 #include <strsafe.h>
+#include <string>
+#include <inttypes.h>
 
 // Media Foundation headers
 #include <mfapi.h>
