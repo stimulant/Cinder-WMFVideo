@@ -90,7 +90,7 @@ namespace MediaFoundationSamples
             }
 
         private:
-            typename List<T*>::Node* pNode;
+            typename List<T>::Node* pNode;
 
             POSITION(Node *p) : pNode(p) 
             {
