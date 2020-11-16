@@ -58,7 +58,7 @@ namespace MediaFoundationSamples
         {
             HRESULT hr = S_OK;
 
-            Node *pNode = Front();
+            Node* pNode = Front();
             while (TRUE)
             {
                 if (pNode == &m_anchor)
@@ -70,7 +70,7 @@ namespace MediaFoundationSamples
                 else if (pNode->item.key == k)
                 {
                     // Found a duplicate item. Fail.
-                    hr = MF_E_INVALID_KEY; 
+                    hr = MF_E_INVALID_KEY;
                     break;
                 }
                 else if (pNode->item.key > k)
@@ -89,8 +89,8 @@ namespace MediaFoundationSamples
         {
             HRESULT hr = E_FAIL;
 
-            Node *pNode = Front();
-            Node *pToRemove = NULL;
+            Node* pNode = Front();
+            Node* pToRemove = NULL;
 
             // Delete the nodes
             while (TRUE)
@@ -103,7 +103,7 @@ namespace MediaFoundationSamples
                 else if (pNode->item.key == k)
                 {
                     // Found the node to remove.
-                    pToRemove = pNode; 
+                    pToRemove = pNode;
                     break;
                 }
                 else if (pNode->item.key > k)
@@ -125,7 +125,7 @@ namespace MediaFoundationSamples
 
         // Find: Search the map for "k" and return the value in pv.
         // pv can be NULL if you don't want to get the value back.
-        HRESULT Find(Key k, Value *pv)
+        HRESULT Find(Key k, Value* pv)
         {
             HRESULT hr = S_OK;
             BOOL bFound = FALSE;
@@ -148,7 +148,7 @@ namespace MediaFoundationSamples
                     // Found a match
                     if (pv)
                     {
-                        *pv = pair.value; 
+                        *pv = pair.value;
                     }
                     bFound = TRUE;
                     break;
@@ -180,14 +180,14 @@ namespace MediaFoundationSamples
         template <class FN>
         void ClearValues(FN& clear_fn)
         {
-            Node *n = m_anchor.next;
+            Node* n = m_anchor.next;
 
             // Delete the nodes
             while (n != &m_anchor)
             {
                 clear_fn(n->item.value);
 
-                Node *tmp = n->next;
+                Node* tmp = n->next;
                 delete n;
                 n = tmp;
             }
@@ -199,12 +199,12 @@ namespace MediaFoundationSamples
             m_count = 0;
         }
 
-        DWORD GetCount() const 
+        DWORD GetCount() const
         {
             return List<pair_type>::GetCount();
         }
 
-    
+
         ////////// Enumeration methods //////////
 
         // Object for enumerating the list.
@@ -212,27 +212,25 @@ namespace MediaFoundationSamples
         {
             friend class TinyMap;
 
-            typedef List<pair_type>::POSITION LISTPOS;
-
         public:
-            MAPPOS() 
+            MAPPOS()
             {
             }
 
-            bool operator==(const MAPPOS &p) const
+            bool operator==(const MAPPOS& p) const
             {
                 return pos == p.pos;
             }
 
-            bool operator!=(const MAPPOS &p) const
+            bool operator!=(const MAPPOS& p) const
             {
                 return pos != p.pos;
             }
 
         private:
-            LISTPOS pos;
+            typename List<pair_type>::POSITION pos;
 
-            MAPPOS(LISTPOS p) : pos(p) 
+            MAPPOS(typename List<pair_type>::POSITION p) : pos(p)
             {
             }
         };
@@ -240,16 +238,16 @@ namespace MediaFoundationSamples
 
         MAPPOS FrontPosition()
         {
-            return MAPPOS( List<pair_type>::FrontPosition() );
+            return MAPPOS(List<pair_type>::FrontPosition());
         }
 
         MAPPOS EndPosition() const
         {
-            return MAPPOS( List<pair_type>::EndPosition() );
+            return MAPPOS(List<pair_type>::EndPosition());
         }
 
-        HRESULT GetValue(MAPPOS vals, Value *ppItem)
-        {  
+        HRESULT GetValue(MAPPOS vals, Value* ppItem)
+        {
             HRESULT hr = S_OK;
 
             pair_type pair;
@@ -265,8 +263,8 @@ namespace MediaFoundationSamples
         }
 
 
-        HRESULT GetKey(MAPPOS vals, Key *ppItem)
-        {  
+        HRESULT GetKey(MAPPOS vals, Key* ppItem)
+        {
             HRESULT hr = S_OK;
 
             pair_type pair;
@@ -283,7 +281,7 @@ namespace MediaFoundationSamples
 
         MAPPOS Next(const MAPPOS vals)
         {
-            return MAPPOS( List<pair_type>::Next( vals.pos ) );
+            return MAPPOS(List<pair_type>::Next(vals.pos));
         }
 
 
