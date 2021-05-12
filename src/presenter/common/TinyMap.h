@@ -212,7 +212,7 @@ namespace MediaFoundationSamples
         {
             friend class TinyMap;
 
-            typedef List<pair_type>::POSITION LISTPOS;
+            typedef typename List<pair_type>::POSITION LISTPOS;
 
         public:
             MAPPOS() 

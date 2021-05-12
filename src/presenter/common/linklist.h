@@ -424,6 +424,7 @@ namespace MediaFoundationSamples
     public:
 
         typedef T* Ptr;
+        using Node = typename List<T *>::Node;
 
         void Clear()
         {
