@@ -13,7 +13,7 @@
 // NOTES:
 // The TinyMap class is designed to hold a small-ish number of elements where
 // look-up performance is not important. (It uses a sorted linked list.)
-// 
+//
 // TinyMap uses "copy semantics" (keys and values are copied into the map).
 // Keys must support the comparison operators.
 
@@ -97,7 +97,7 @@ namespace MediaFoundationSamples
             {
                 if (pNode == &m_anchor)
                 {
-                    // Reached the end of the list. 
+                    // Reached the end of the list.
                     break;
                 }
                 else if (pNode->item.key == k)
@@ -211,6 +211,8 @@ namespace MediaFoundationSamples
         class MAPPOS
         {
             friend class TinyMap;
+
+            typedef typename List<pair_type>::POSITION LISTPOS;
 
         public:
             MAPPOS()

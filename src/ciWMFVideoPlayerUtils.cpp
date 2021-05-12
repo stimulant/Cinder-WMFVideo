@@ -20,7 +20,6 @@
 #pragma comment(lib, "Propsys.lib")
 
 #include "presenter/Presenter.h"
-#include "atlcomcli.h"
 
 #include "cinder/Log.h"
 #include "cinder/app/App.h"
