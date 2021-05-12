@@ -5,6 +5,9 @@ Cinder port of [Second Story's](http://www.secondstory.com/) [ofxWMFVideoPlayer 
 
 # Revision History
 
+## May 12th 20201
+- Fixed to work with cinder0.9.3dev on vs2019 and c++17. Discussion [here](https://discourse.libcinder.org/t/cinder-wmfvideo-with-c-17-and-vs2019/1814/6)
+
 ## v.Next
 - Potion [forked](https://github.com/Potion/Cinder-WMFVideo) 266Hz's version
 - Added features / utility functions:
