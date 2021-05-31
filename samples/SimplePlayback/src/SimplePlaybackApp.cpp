@@ -50,7 +50,7 @@ void SimplePlaybackApp::draw()
 
 void SimplePlaybackApp::setup()
 {
-	std::string videoPath = getAssetPath( "demo.mp4" ).string();
+	std::string videoPath = getAssetPath( "1.wmv" ).string();
 	mVideo1.loadMovie( videoPath, "Headphones (High Definition Audio Device)" );
 	mVideo1.play();
 	mVideo1.setLoop(true);
@@ -80,5 +80,6 @@ void SimplePlaybackApp::update()
 CINDER_APP( SimplePlaybackApp, RendererGl, []( App::Settings * settings )
 {
 	settings->setFrameRate( 60.0f );
-	settings->prepareWindow( Window::Format().size( 1280, 720 ).title( "Simple Playback" ) );
+	settings->prepareWindow(Window::Format().size(1280, 720).title("Simple Playback"));
+	settings->setConsoleWindowEnabled(true);
 } )

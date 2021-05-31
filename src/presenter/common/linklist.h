@@ -35,6 +35,8 @@
 
 namespace MediaFoundationSamples
 {
+
+
     template <class T>
     struct NoOp
     {
@@ -46,13 +48,13 @@ namespace MediaFoundationSamples
     template <class T>
     class List
     {
-    public:
+    protected:
 
         // Nodes in the linked list
         struct Node
         {
-            Node *prev;
-            Node *next;
+            Node* prev;
+            Node* next;
             T    item;
 
             Node() : prev(NULL), next(NULL)
@@ -79,20 +81,20 @@ namespace MediaFoundationSamples
             {
             }
 
-            bool operator==(const POSITION &p) const
+            bool operator==(const POSITION& p) const
             {
                 return pNode == p.pNode;
             }
 
-            bool operator!=(const POSITION &p) const
+            bool operator!=(const POSITION& p) const
             {
                 return pNode != p.pNode;
             }
 
         private:
-            typename List<T>::Node* pNode;
+            const Node* pNode;
 
-            POSITION(Node *p) : pNode(p) 
+            POSITION(Node* p) : pNode(p)
             {
             }
         };
@@ -111,21 +113,21 @@ namespace MediaFoundationSamples
             return m_anchor.prev;
         }
 
-        virtual HRESULT InsertAfter(T item, Node *pBefore)
+        virtual HRESULT InsertAfter(T item, Node* pBefore)
         {
             if (pBefore == NULL)
             {
                 return E_POINTER;
             }
 
-            Node *pNode = new Node(item);
+            Node* pNode = new Node(item);
             if (pNode == NULL)
             {
                 return E_OUTOFMEMORY;
             }
 
-            Node *pAfter = pBefore->next;
-            
+            Node* pAfter = pBefore->next;
+
             pBefore->next = pNode;
             pAfter->prev = pNode;
 
@@ -137,7 +139,7 @@ namespace MediaFoundationSamples
             return S_OK;
         }
 
-        virtual HRESULT GetItem(const Node *pNode, T* ppItem)
+        virtual HRESULT GetItem(const Node* pNode, T* ppItem)
         {
             if (pNode == NULL || ppItem == NULL)
             {
@@ -151,7 +153,7 @@ namespace MediaFoundationSamples
         // RemoveItem:
         // Removes a node and optionally returns the item.
         // ppItem can be NULL.
-        virtual HRESULT RemoveItem(Node *pNode, T *ppItem)
+        virtual HRESULT RemoveItem(Node* pNode, T* ppItem)
         {
             if (pNode == NULL)
             {
@@ -215,7 +217,7 @@ namespace MediaFoundationSamples
 
         // RemoveBack: Removes the tail of the list and returns the value.
         // ppItem can be NULL if you don't want the item back. (But the method does not release the item.)
-        HRESULT RemoveBack(T *ppItem)
+        HRESULT RemoveBack(T* ppItem)
         {
             if (IsEmpty())
             {
@@ -229,7 +231,7 @@ namespace MediaFoundationSamples
 
         // RemoveFront: Removes the head of the list and returns the value.
         // ppItem can be NULL if you don't want the item back. (But the method does not release the item.)
-        HRESULT RemoveFront(T *ppItem)
+        HRESULT RemoveFront(T* ppItem)
         {
             if (IsEmpty())
             {
@@ -242,7 +244,7 @@ namespace MediaFoundationSamples
         }
 
         // GetBack: Gets the tail item.
-        HRESULT GetBack(T *ppItem)
+        HRESULT GetBack(T* ppItem)
         {
             if (IsEmpty())
             {
@@ -255,7 +257,7 @@ namespace MediaFoundationSamples
         }
 
         // GetFront: Gets the front item.
-        HRESULT GetFront(T *ppItem)
+        HRESULT GetFront(T* ppItem)
         {
             if (IsEmpty())
             {
@@ -281,14 +283,14 @@ namespace MediaFoundationSamples
         template <class FN>
         void Clear(FN& clear_fn)
         {
-            Node *n = m_anchor.next;
+            Node* n = m_anchor.next;
 
             // Delete the nodes
             while (n != &m_anchor)
             {
                 clear_fn(n->item);
 
-                Node *tmp = n->next;
+                Node* tmp = n->next;
                 delete n;
                 n = tmp;
             }
@@ -326,13 +328,13 @@ namespace MediaFoundationSamples
             return POSITION();
         }
 
-        HRESULT GetItemPos(POSITION pos, T *ppItem)
-        {   
+        HRESULT GetItemPos(POSITION pos, T* ppItem)
+        {
             if (pos.pNode)
             {
                 return GetItem(pos.pNode, ppItem);
             }
-            else 
+            else
             {
                 return E_FAIL;
             }
@@ -353,12 +355,12 @@ namespace MediaFoundationSamples
         // Remove an item at a position. 
         // The item is returns in ppItem, unless ppItem is NULL.
         // NOTE: This method invalidates the POSITION object.
-        HRESULT Remove(POSITION& pos, T *ppItem)
+        HRESULT Remove(POSITION& pos, T* ppItem)
         {
             if (pos.pNode)
             {
                 // Remove const-ness temporarily...
-                Node *pNode = const_cast<Node*>(pos.pNode);
+                Node* pNode = const_cast<Node*>(pos.pNode);
 
                 pos = POSITION();
 
@@ -381,8 +383,8 @@ namespace MediaFoundationSamples
 
     class ComAutoRelease
     {
-    public: 
-        void operator()(IUnknown *p)
+    public:
+        void operator()(IUnknown* p)
         {
             if (p)
             {
@@ -390,11 +392,11 @@ namespace MediaFoundationSamples
             }
         }
     };
-        
+
     class MemDelete
     {
-    public: 
-        void operator()(void *p)
+    public:
+        void operator()(void* p)
         {
             if (p)
             {
@@ -422,7 +424,7 @@ namespace MediaFoundationSamples
     public:
 
         typedef T* Ptr;
-        using Node = typename List<T *>::Node;
+        using Node = typename List<T*>::Node;
 
         void Clear()
         {
@@ -435,7 +437,7 @@ namespace MediaFoundationSamples
         }
 
     protected:
-        HRESULT InsertAfter(Ptr item, typename const List<T*>::Node *pBefore)
+        HRESULT InsertAfter(Ptr item, Node* pBefore)
         {
             // Do not allow NULL item pointers unless NULLABLE is true.
             if (!item && !NULLABLE)
@@ -456,7 +458,7 @@ namespace MediaFoundationSamples
             return hr;
         }
 
-        HRESULT GetItem(typename const List<T*>::Node *pNode, Ptr* ppItem)
+        HRESULT GetItem(const Node* pNode, Ptr* ppItem)
         {
             Ptr pItem = NULL;
 
@@ -475,7 +477,7 @@ namespace MediaFoundationSamples
             return hr;
         }
 
-        HRESULT RemoveItem(typename const List<T*>::Node *pNode, Ptr *ppItem)
+        HRESULT RemoveItem(Node* pNode, Ptr* ppItem)
         {
             // ppItem can be NULL, but we need to get the
             // item so that we can release it. 
