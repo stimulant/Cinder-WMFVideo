@@ -14,6 +14,6 @@
 	<headerPattern>src/*.h</headerPattern>
 	<headerPattern>src/presenter/*.h</headerPattern>
 	<headerPattern>src/presenter/common/*.h</headerPattern>
-	<includePath>src</includePath>
+	<includePath>include</includePath>
 </block>
 </cinder>
