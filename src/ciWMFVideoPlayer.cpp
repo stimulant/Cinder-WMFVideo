@@ -53,7 +53,7 @@ void ciWMFVideoPlayer::unbind()
 
 ciWMFVideoPlayer* findPlayers( HWND hwnd )
 {
-	for each( PlayerItem e in g_WMFVideoPlayers ) {
+	for ( PlayerItem& e : g_WMFVideoPlayers ) {
 		if( e.first == hwnd ) { return e.second; }
 	}
 

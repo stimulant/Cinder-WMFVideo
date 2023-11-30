@@ -1503,6 +1503,8 @@ HRESULT EVRCustomPresenter::CalculateOutputRectangle(IMFMediaType *pProposedType
 
     // Helper object to read the media type.
     VideoType mtProposed(pProposedType);
+    LONG offsetX;
+    LONG offsetY;
 
     // Get the source's frame dimensions.
     CHECK_HR(hr = mtProposed.GetFrameDimensions(&srcWidth, &srcHeight));
@@ -1511,8 +1513,8 @@ HRESULT EVRCustomPresenter::CalculateOutputRectangle(IMFMediaType *pProposedType
     CHECK_HR(hr = mtProposed.GetVideoDisplayArea(&displayArea));
 
     // Calculate the x,y offsets of the display area.
-    LONG offsetX = (LONG)MFOffsetToFloat(displayArea.OffsetX);
-    LONG offsetY = (LONG)MFOffsetToFloat(displayArea.OffsetY);
+    offsetX = (LONG)MFOffsetToFloat(displayArea.OffsetX);
+    offsetY = (LONG)MFOffsetToFloat(displayArea.OffsetY);
 
     // Use the display area if valid. Otherwise, use the entire frame.
     if (displayArea.Area.cx != 0 &&

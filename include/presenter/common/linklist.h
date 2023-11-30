@@ -281,7 +281,7 @@ namespace MediaFoundationSamples
         // Clear: Takes a functor object whose operator()
         // frees the object on the list.
         template <class FN>
-        void Clear(FN& clear_fn)
+        void Clear(FN&& clear_fn)
         {
             Node* n = m_anchor.next;
 

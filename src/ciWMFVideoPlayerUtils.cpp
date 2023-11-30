@@ -193,6 +193,9 @@ HRESULT CPlayer::OpenMultipleURL( vector<const WCHAR*>& urls )
 	IMFMediaSourceTopologyProvider* spSrcTopoProvider = NULL;
 	HRESULT hr = S_OK;
 
+	int nUrl;
+	int nPresenters;
+
 	if( mPreviousTopoID != 0 ) {
 		hr = mSequencerSource->DeleteTopology( mPreviousTopoID ) ;
 		mPreviousTopoID = 0;
@@ -211,8 +214,8 @@ HRESULT CPlayer::OpenMultipleURL( vector<const WCHAR*>& urls )
 		CHECK_HR( hr );
 	}
 
-	int nUrl = urls.size();
-	int nPresenters = mEVRPresenters.size();
+	nUrl = urls.size();
+	nPresenters = mEVRPresenters.size();
 
 	for( int i = nPresenters; i < nUrl; i ++ ) {
 		EVRCustomPresenter* presenter = new EVRCustomPresenter( hr );

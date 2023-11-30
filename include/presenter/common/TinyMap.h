@@ -58,13 +58,13 @@ namespace MediaFoundationSamples
         {
             HRESULT hr = S_OK;
 
-            Node* pNode = Front();
+            auto* pNode = this->Front();
             while (TRUE)
             {
-                if (pNode == &m_anchor)
+                if (pNode == &this->m_anchor)
                 {
                     // Reached the end of the list. Insert at end.
-                    hr = InsertBack(pair_type(k, v));
+                    hr = this->InsertBack(pair_type(k, v));
                     break;
                 }
                 else if (pNode->item.key == k)
@@ -76,7 +76,7 @@ namespace MediaFoundationSamples
                 else if (pNode->item.key > k)
                 {
                     // Found a larger key. Insert before this item.
-                    hr = InsertAfter(pair_type(k, v), pNode->prev);
+                    hr = this->InsertAfter(pair_type(k, v), pNode->prev);
                     break;
                 }
                 pNode = pNode->next;
@@ -89,13 +89,13 @@ namespace MediaFoundationSamples
         {
             HRESULT hr = E_FAIL;
 
-            Node* pNode = Front();
-            Node* pToRemove = NULL;
+            auto* pNode = this->Front();
+            auto* pToRemove = NULL;
 
             // Delete the nodes
             while (TRUE)
             {
-                if (pNode == &m_anchor)
+                if (pNode == &this->m_anchor)
                 {
                     // Reached the end of the list.
                     break;
@@ -117,7 +117,7 @@ namespace MediaFoundationSamples
 
             if (pToRemove)
             {
-                hr = RemoveItem(pToRemove, NULL);
+                hr = this->RemoveItem(pToRemove, NULL);
             }
 
             return hr;
@@ -132,11 +132,11 @@ namespace MediaFoundationSamples
 
             pair_type pair;
 
-            POSITION pos = List<pair_type>::FrontPosition();
+            auto pos = this->FrontPosition();
 
-            while (pos != List<pair_type>::EndPosition())
+            while (pos != this->EndPosition())
             {
-                hr = GetItemPos(pos, &pair);
+                hr = this->GetItemPos(pos, &pair);
 
                 if (FAILED(hr))
                 {
@@ -160,14 +160,14 @@ namespace MediaFoundationSamples
                     break;
                 }
 
-                pos = List<pair_type>::Next(pos);
+                pos = this->Next(pos);
             }
             return (bFound ? S_OK : MF_E_INVALID_KEY);
         }
 
         void Clear()
         {
-            List<pair_type>::Clear();
+            this->Clear();
         }
 
         // ClearValues
@@ -180,28 +180,28 @@ namespace MediaFoundationSamples
         template <class FN>
         void ClearValues(FN& clear_fn)
         {
-            Node* n = m_anchor.next;
+            auto* n = this->m_anchor.next;
 
             // Delete the nodes
-            while (n != &m_anchor)
+            while (n != &this->m_anchor)
             {
                 clear_fn(n->item.value);
 
-                Node* tmp = n->next;
+                auto* tmp = n->next;
                 delete n;
                 n = tmp;
             }
 
             // Reset the anchor to point at itself
-            m_anchor.next = &m_anchor;
-            m_anchor.prev = &m_anchor;
+            this->m_anchor.next = &this->m_anchor;
+            this->m_anchor.prev = &this->m_anchor;
 
-            m_count = 0;
+            this->m_count = 0;
         }
 
         DWORD GetCount() const
         {
-            return List<pair_type>::GetCount();
+            return this->GetCount();
         }
 
 
