@@ -121,7 +121,7 @@ bool D3DPresentEngine::createSharedTexture(int w, int h, int textureID)
 		
 	gl_handle = wglDXRegisterObjectNV(gl_handleD3D, d3d_shared_texture,
 		gl_name,
-		GL_TEXTURE_RECTANGLE,
+        WMFVIDEO_USE_TEXTURE_RECT ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D,
 		WGL_ACCESS_READ_ONLY_NV);
 
 	if (!gl_handle) 

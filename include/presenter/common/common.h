@@ -3,6 +3,11 @@
 #include "logging.h"
 
 
+// Options
+#ifndef WMFVIDEO_USE_TEXTURE_RECT
+# define WMFVIDEO_USE_TEXTURE_RECT 1
+#endif
+
 // Common macros
 
 // SAFE_RELEASE template.

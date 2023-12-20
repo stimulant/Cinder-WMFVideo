@@ -159,7 +159,9 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 
 			gl::Texture::Format format;
 			format.setInternalFormat( GL_RGBA );
+#if WMFVIDEO_USE_TEXTURE_RECT
 			format.setTargetRect();
+#endif
 			format.loadTopDown( true );
 			mTex = gl::Texture::create( mWidth, mHeight, format );
 			mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
@@ -174,7 +176,9 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 
 				gl::Texture::Format format;
 				format.setInternalFormat( GL_RGBA );
+#if WMFVIDEO_USE_TEXTURE_RECT
 				format.setTargetRect();
+#endif
 				format.loadTopDown( true );
 				mTex = gl::Texture::create( mWidth, mHeight, format );
 				mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
