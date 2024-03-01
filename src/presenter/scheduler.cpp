@@ -12,7 +12,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "EVRPresenter.h"
+#include "presenter/EVRPresenter.h"
 #include <mmsystem.h>
 
 #pragma comment(lib, "Winmm")
@@ -120,20 +120,22 @@ HRESULT Scheduler::StartScheduler(IMFClock *pClock)
         CHECK_HR(hr = HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    HANDLE hObjects[] = { m_hThreadReadyEvent, m_hSchedulerThread };
-    DWORD dwWait = 0;
-
-    // Wait for the thread to signal the "thread ready" event.
-    dwWait = WaitForMultipleObjects(2, hObjects, FALSE, INFINITE);  // Wait for EITHER of these handles.
-    if (WAIT_OBJECT_0 != dwWait)
     {
-        // The thread terminated early for some reason. This is an error condition.
-        CloseHandle(m_hSchedulerThread);
-        m_hSchedulerThread = NULL;
-        CHECK_HR(hr = E_UNEXPECTED);
-    }
+        HANDLE hObjects[] = { m_hThreadReadyEvent, m_hSchedulerThread };
+        DWORD dwWait = 0;
 
-    m_dwThreadID = dwID;
+        // Wait for the thread to signal the "thread ready" event.
+        dwWait = WaitForMultipleObjects(2, hObjects, FALSE, INFINITE);  // Wait for EITHER of these handles.
+        if (WAIT_OBJECT_0 != dwWait)
+        {
+            // The thread terminated early for some reason. This is an error condition.
+            CloseHandle(m_hSchedulerThread);
+            m_hSchedulerThread = NULL;
+            CHECK_HR(hr = E_UNEXPECTED);
+        }
+
+        m_dwThreadID = dwID;
+    }
 
 done:
 

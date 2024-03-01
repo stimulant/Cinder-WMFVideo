@@ -20,7 +20,6 @@
 #pragma comment(lib, "Propsys.lib")
 
 #include "presenter/Presenter.h"
-#include "atlcomcli.h"
 
 #include "cinder/Log.h"
 #include "cinder/app/App.h"
@@ -194,6 +193,9 @@ HRESULT CPlayer::OpenMultipleURL( vector<const WCHAR*>& urls )
 	IMFMediaSourceTopologyProvider* spSrcTopoProvider = NULL;
 	HRESULT hr = S_OK;
 
+	int nUrl;
+	int nPresenters;
+
 	if( mPreviousTopoID != 0 ) {
 		hr = mSequencerSource->DeleteTopology( mPreviousTopoID ) ;
 		mPreviousTopoID = 0;
@@ -212,8 +214,8 @@ HRESULT CPlayer::OpenMultipleURL( vector<const WCHAR*>& urls )
 		CHECK_HR( hr );
 	}
 
-	int nUrl = urls.size();
-	int nPresenters = mEVRPresenters.size();
+	nUrl = urls.size();
+	nPresenters = mEVRPresenters.size();
 
 	for( int i = nPresenters; i < nUrl; i ++ ) {
 		EVRCustomPresenter* presenter = new EVRCustomPresenter( hr );
@@ -485,7 +487,7 @@ HRESULT CPlayer::setVolume( float vol )
 		mCurrentVolume = vol;
 
 		if( FAILED( hr ) ) {
-			CI_LOG_E( "Error while getting sound control interface" );
+			CI_LOG_W( "Error while getting sound control interface" );
 			//ofLogError( "ofxWMFVideoPlayer", "setVolume: Error while getting sound control interface" );
 			return E_FAIL;
 		}
@@ -746,6 +748,7 @@ HRESULT CPlayer::OnPresentationEnded( IMFMediaEvent* pEvent )
 
 	if( mIsLooping ) {
 		hr = Stop();
+		setPosition( 0.0f );
 		hr = Play();
 	}
 	else {
@@ -1007,6 +1010,11 @@ HRESULT CreateMediaSinkActivate(
 			UINT pcDevices;
 			pDevices->GetCount( &pcDevices );
 
+			// Returns a pointer to an activation object, which can be used to create the SAR.
+			if( SUCCEEDED( hr ) ) {
+				hr = MFCreateAudioRendererActivate( &pActivate );
+			}
+
 			for( UINT i = 0 ; i < pcDevices; i++ ) {
 				hr = pDevices->Item( i, &pDevice );
 
@@ -1032,10 +1040,12 @@ HRESULT CreateMediaSinkActivate(
 
 						hr = PropVariantToString( varName, szName, ARRAYSIZE( szName ) );
 
+#if 0
 						// list out audio devices
 						wstring ws( szName );
 						string str( ws.begin(), ws.end() );
-						ci::app::console() << str << std::endl;
+						CI_LOG_I( str );
+#endif
 
 						if( SUCCEEDED( hr ) || hr == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 							if( wcscmp( szName, audioDeviceId ) == 0 ) {
@@ -1044,6 +1054,16 @@ HRESULT CreateMediaSinkActivate(
 								if( SUCCEEDED( hr ) ) {
 									hr = pDevice->GetId( &wstrID );
 									PropVariantClear( &varName );
+
+									// Only set endpoint device if a matching name is found, if the Windows default playback device has changed, it won't switch.
+									// If name not specified / not mataching, WMF will auto switch endpoint devices during playback.
+									if( SUCCEEDED( hr ) ) {
+										hr = pActivate->SetString(
+										         MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
+										         wstrID
+										     );
+									}
+
 									break;
 								}
 							}
@@ -1053,16 +1073,6 @@ HRESULT CreateMediaSinkActivate(
 			}
 		}
 
-		if( SUCCEEDED( hr ) ) {
-			hr = MFCreateAudioRendererActivate( &pActivate );
-		}
-
-		if( SUCCEEDED( hr ) ) {
-			hr = pActivate->SetString(
-			         MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ID,
-			         wstrID
-			     );
-		}
 
 		//SAFE_RELEASE(pActivate)
 
@@ -1087,7 +1097,7 @@ HRESULT CreateMediaSinkActivate(
 		CHECK_HR( hr );
 
 		//ThrowIfFail( pVideoRenderer->InitializeRenderer( NULL, pVideoPresenter ) );
-		hr = pVideoRenderer->InitializeRenderer( NULL, pVideoPresenter ) ;
+		hr = pVideoRenderer->InitializeRenderer(NULL, pVideoPresenter);
 		CHECK_HR( hr );
 
 		*ppMediaSink = pSink;

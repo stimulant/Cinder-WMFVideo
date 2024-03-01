@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <CINDER_WMFVIDEO_ROOT>../../..</CINDER_WMFVIDEO_ROOT>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(CINDER_WMFVIDEO_ROOT)\include;$(CINDER_WMFVIDEO_ROOT)\include\presenter;$(CINDER_WMFVIDEO_ROOT)\include\presenter\common;</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cinder-wmfvideo.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="CINDER_WMFVIDEO_ROOT">
+      <Value>$(CINDER_WMFVIDEO_ROOT)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

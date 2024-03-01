@@ -2,6 +2,7 @@
 #include "ciWMFVideoPlayer.h"
 
 #include "cinder/app/App.h"
+#include "cinder/msw/CinderMsw.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Log.h"
 
@@ -25,8 +26,8 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const ciWMFVid
 	mCtx->pushTextureBinding( mTarget, video.mTex->getId(), mTextureUnit );
 }
 
-ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind(const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit)
-	:ScopedVideoTextureBind(*video, textureUnit)
+ciWMFVideoPlayer::ScopedVideoTextureBind::ScopedVideoTextureBind( const std::shared_ptr<ciWMFVideoPlayer> video, uint8_t textureUnit )
+	: ScopedVideoTextureBind( *video, textureUnit )
 {}
 
 ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
@@ -35,9 +36,24 @@ ciWMFVideoPlayer::ScopedVideoTextureBind::~ScopedVideoTextureBind()
 	mPlayer->mEVRPresenter->unlockSharedTexture();
 }
 
+
+void ciWMFVideoPlayer::bind(uint8_t texture_unit)
+{
+	mPlayer->mEVRPresenter->lockSharedTexture();
+	mTex->bind(texture_unit);
+	mIsSharedTextureLocked = true;
+}
+
+void ciWMFVideoPlayer::unbind()
+{
+	mIsSharedTextureLocked = false;
+	mTex->unbind();
+	mPlayer->mEVRPresenter->unlockSharedTexture();
+}
+
 ciWMFVideoPlayer* findPlayers( HWND hwnd )
 {
-	for each( PlayerItem e in g_WMFVideoPlayers ) {
+	for ( PlayerItem& e : g_WMFVideoPlayers ) {
 		if( e.first == hwnd ) { return e.second; }
 	}
 
@@ -49,6 +65,7 @@ int  ciWMFVideoPlayer::mInstanceCount = 0;
 ciWMFVideoPlayer::ciWMFVideoPlayer()
 	: mPlayer( NULL )
 	, mVideoFill( VideoFill::FILL )
+	, mPlayPending( false )
 {
 	if( mInstanceCount == 0 )  {
 		HRESULT hr = MFStartup( MF_VERSION );
@@ -84,6 +101,13 @@ ciWMFVideoPlayer::~ciWMFVideoPlayer()
 	}
 
 	CI_LOG_I( "Player " << mId << " Terminated" );
+
+	auto hwnd = mHWNDPlayer;
+
+	g_WMFVideoPlayers.erase( std::remove_if( g_WMFVideoPlayers.begin(), g_WMFVideoPlayers.end(), [hwnd]( PlayerItem & p ) {
+		return p.first == hwnd;
+	} ), g_WMFVideoPlayers.end() );
+
 	mInstanceCount--;
 
 	if( mInstanceCount == 0 ) {
@@ -100,12 +124,14 @@ void ciWMFVideoPlayer::forceExit()
 	}
 }
 
-bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice )
+bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioDevice, bool isAudioOnly )
 {
 	if( !mPlayer ) {
 		//ofLogError("ciWMFVideoPlayer") << "Player not created. Can't open the movie.";
 		return false;
 	}
+
+	mIsAudioOnly = isAudioOnly;
 
 	//DWORD fileAttr = GetFileAttributesW( filePath.c_str() );
 	//if (fileAttr == INVALID_FILE_ATTRIBUTES)
@@ -120,38 +146,43 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 	HRESULT hr = S_OK;
 	std::wstring w = filePath.wstring();
 
-	std::wstring a( audioDevice.length(), L' ' );
-	std::copy( audioDevice.begin(), audioDevice.end(), a.begin() );
+	std::wstring a = ci::msw::toWideString( audioDevice );
 
 	hr = mPlayer->OpenURL( w.c_str(), a.c_str() );
 
 	//	CI_LOG_D(GetPlayerStateString(mPlayer->GetState()));
 
-	if( !mSharedTextureCreated ) {
-		mWidth = mPlayer->getWidth();
-		mHeight = mPlayer->getHeight();
-
-		gl::Texture::Format format;
-		format.setInternalFormat( GL_RGBA );
-		format.setTargetRect();
-		format.loadTopDown( true );
-		mTex = gl::Texture::create( mWidth, mHeight, format );
-		mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
-		mSharedTextureCreated = true;
-	}
-	else {
-		if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
-			mPlayer->mEVRPresenter->releaseSharedTexture();
-
+	if( !isAudioOnly ) {
+		if( !mSharedTextureCreated ) {
 			mWidth = mPlayer->getWidth();
 			mHeight = mPlayer->getHeight();
 
 			gl::Texture::Format format;
 			format.setInternalFormat( GL_RGBA );
+#if WMFVIDEO_USE_TEXTURE_RECT
 			format.setTargetRect();
+#endif
 			format.loadTopDown( true );
 			mTex = gl::Texture::create( mWidth, mHeight, format );
 			mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			mSharedTextureCreated = true;
+		}
+		else {
+			if( ( mWidth != mPlayer->getWidth() ) || ( mHeight != mPlayer->getHeight() ) ) {
+				mPlayer->mEVRPresenter->releaseSharedTexture();
+
+				mWidth = mPlayer->getWidth();
+				mHeight = mPlayer->getHeight();
+
+				gl::Texture::Format format;
+				format.setInternalFormat( GL_RGBA );
+#if WMFVIDEO_USE_TEXTURE_RECT
+				format.setTargetRect();
+#endif
+				format.loadTopDown( true );
+				mTex = gl::Texture::create( mWidth, mHeight, format );
+				mPlayer->mEVRPresenter->createSharedTexture( mWidth, mHeight, mTex->getId() );
+			}
 		}
 	}
 
@@ -162,6 +193,10 @@ bool ciWMFVideoPlayer::loadMovie( const fs::path& filePath, const string& audioD
 void ciWMFVideoPlayer::draw( int x, int y, int w, int h )
 {
 	if( !mPlayer ) {
+		return;
+	}
+
+	if( mIsAudioOnly ) {
 		return;
 	}
 
@@ -213,12 +248,15 @@ void ciWMFVideoPlayer::update()
 {
 	if( !mPlayer ) { return; }
 
-	if( ( mWaitForLoadedToPlay ) && mPlayer->GetState() == PAUSED ) {
+	if ( mWaitForLoadedToPlay && mPlayer->GetState() == PAUSED) {
 		mWaitForLoadedToPlay = false;
 		mPlayer->Play();
 	}
 
-	return;
+	if( mPlayPending && mPlayer->GetState() == STARTED ) {
+		mPlayPending = false;
+		mPlayStartedSignal.emit();
+	}
 }
 
 void ciWMFVideoPlayer::play()
@@ -228,6 +266,7 @@ void ciWMFVideoPlayer::play()
 	if( mPlayer->GetState()  == OPEN_PENDING ) { mWaitForLoadedToPlay = true; }
 
 	mPlayer->Play();
+	mPlayPending = true;
 }
 
 void ciWMFVideoPlayer::stop()
@@ -237,6 +276,7 @@ void ciWMFVideoPlayer::stop()
 
 void ciWMFVideoPlayer::pause()
 {
+	if (mPlayer->GetState() == OPEN_PENDING) { mWaitForLoadedToPlay = false; }
 	mPlayer->Pause();
 }
 
@@ -315,14 +355,14 @@ bool ciWMFVideoPlayer::setSpeed( float speed, bool useThinning )
 	}
 	else {
 		//setting to a negative doesn't seem to work though no error is thrown...
-		/*float position = getPosition();
+		float position = getPosition();
 		if(isPlaying())
 		mPlayer->Stop();
 		hr = mPlayer->SetPlaybackRate(useThinning, speed);
 		if(resume){
-		mPlayer->Play();
-		mPlayer->setPosition(position);
-		}*/
+			mPlayer->setPosition(position);
+			mPlayer->Play();
+		}
 	}
 
 	if( hr == S_OK ) {
@@ -359,6 +399,15 @@ PresentationEndedSignal& ciWMFVideoPlayer::getPresentationEndedSignal()
 float ciWMFVideoPlayer::getHeight() { return mPlayer->getHeight(); }
 float ciWMFVideoPlayer::getWidth() { return mPlayer->getWidth(); }
 void  ciWMFVideoPlayer::setLoop( bool isLooping ) { mIsLooping = isLooping; mPlayer->setLooping( isLooping ); }
+
+ci::vec2 ciWMFVideoPlayer::getTextureSize()
+{
+	if( mTex ) {
+		return ci::vec2( mTex->getWidth(), mTex->getHeight() );
+	}
+
+	return ci::vec2( 0 );
+}
 
 //-----------------------------------
 // Prvate Functions
@@ -462,4 +511,3 @@ BOOL ciWMFVideoPlayer::InitInstance()
 
 	return TRUE;
 }
-
